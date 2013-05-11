@@ -1,0 +1,370 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title> </title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/reset.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/text.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/960.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/aura.css" />
+
+  <script src="../js/jquery-1.6.1.min.js"></script>
+  <script>
+    $(document).ready(function()
+    {
+      $('#logo').hide();
+      $('#logo').delay(300).fadeIn(2000);
+    });
+  </script>
+</head>
+
+<body>
+<div id="top">
+  <div id="menu">
+    <a href="/">Home</a><a href="docs/">Documentation</a>
+  </div>
+  <div id="banner">
+    <a href="http://www.auraphp.org/" id="logo"></a>
+  </div>
+  <div id="content">
+    <div class="container_12">
+
+<h1 id="title">aura.web</h1>
+<!-- Page published by Emacs Muse begins here -->
+
+<div class="page-nav">
+    <span class="page-prev"><a href="aura.view.html">上一页</a></span>
+    <span class="page-next"><a href="aura.http.html">下一页</a></span>
+</div>
+<hr />
+
+<div class="contents">
+
+<dl>
+<dt>
+<a href="#sec1">简介</a>
+</dt>
+<dt>
+<a href="#sec2">基本用法</a>
+</dt>
+<dd>
+<dl>
+<dt>
+<a href="#sec3">实例化Web环境</a>
+</dt>
+<dt>
+<a href="#sec4">获取URL $_GET值</a>
+
+</dt>
+<dt>
+<a href="#sec5">获取用户提交数据：</a>
+</dt>
+<dt>
+<a href="#sec6">获取HTTP接受头部</a>
+</dt>
+</dl>
+</dd>
+<dt>
+<a href="#sec7">魔术引用</a>
+</dt>
+<dt>
+<a href="#sec8">高级用法</a>
+
+</dt>
+<dd>
+<dl>
+<dt>
+<a href="#sec9">接收json、xml或其他类型的内容输入</a>
+</dt>
+<dt>
+<a href="#sec10">重写HTTP请求方法</a>
+</dt>
+</dl>
+</dd>
+<dt>
+<a href="#sec11">Aura Web Csrf</a>
+</dt>
+
+<dd>
+<dl>
+<dt>
+<a href="#sec12">使用Ａura Web CSRF</a>
+</dt>
+</dl>
+</dd>
+</dl>
+</div>
+
+
+<hr />
+
+<h2><a name="sec1" id="sec1"></a>
+简介</h2>
+
+<p class="first">暂未添加。。。
+<hr /></p>
+
+
+<h2><a name="sec2" id="sec2"></a>
+基本用法</h2>
+
+<h3><a name="sec3" id="sec3"></a>
+实例化Web环境</h3>
+
+<p class="first">最简单的方法就是直接调用<code>aura.web/scripts/instance.php</code>脚本。</p>
+
+<pre class="src">
+$<span style="color: #ffffff; font-weight: bold;">webcontext</span> = <span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'/path/to/aura.web/scripts/instance.php'</span>;
+</pre>
+
+<p><strong>NOTE</strong>:　如果<code>$csrf_secret_key</code>和<code>$csrf_user_id</code>变量在<code>aura.web/scripts/instance.php</code>调用前仍未定义，那么CSRF测试将不可用。调用<code>aura\web\Context-&gt;isCsrf()</code>将抛出<code>aura\web\Exception_Context</code>异常。</p>
+
+<h4>get*方法</h4>
+
+<pre class="src">
+<span style="color: #c0c0c0; background-color: #000000;">getQuery(</span>$<span style="color: #ffffff; font-weight: bold;">key</span>, $<span style="color: #ffffff; font-weight: bold;">alt</span> = <span style="color: #00ff00;">null</span>)
+<span style="color: #c0c0c0; background-color: #000000;">getInput(</span>$<span style="color: #ffffff; font-weight: bold;">key</span>, $<span style="color: #ffffff; font-weight: bold;">alt</span> = <span style="color: #00ff00;">null</span>)
+
+<span style="color: #c0c0c0; background-color: #000000;">getServer(</span>$<span style="color: #ffffff; font-weight: bold;">key</span>, $<span style="color: #ffffff; font-weight: bold;">alt</span> = <span style="color: #00ff00;">null</span>)
+<span style="color: #c0c0c0; background-color: #000000;">getCookie(</span>$<span style="color: #ffffff; font-weight: bold;">key</span>, $<span style="color: #ffffff; font-weight: bold;">alt</span> = <span style="color: #00ff00;">null</span>)
+
+<span style="color: #c0c0c0; background-color: #000000;">getEnv(</span>$<span style="color: #ffffff; font-weight: bold;">key</span>, $<span style="color: #ffffff; font-weight: bold;">alt</span> = <span style="color: #00ff00;">null</span>)
+<span style="color: #c0c0c0; background-color: #000000;">getheader(</span>$<span style="color: #ffffff; font-weight: bold;">key</span>, $<span style="color: #ffffff; font-weight: bold;">alt</span> = <span style="color: #00ff00;">null</span>)
+
+<span style="color: #c0c0c0; background-color: #000000;">getAccept(</span>$<span style="color: #ffffff; font-weight: bold;">key</span>, $<span style="color: #ffffff; font-weight: bold;">alt</span> = <span style="color: #00ff00;">null</span>)
+</pre>
+
+
+<h4>可用的属性：</h4>
+
+<pre class="src">
+<span style="color: #ff0000; font-weight: bold;">get</span>
+
+<span style="color: #ff0000; font-weight: bold;">post</span>
+<span style="color: #ff0000; font-weight: bold;">cookies</span>
+<span style="color: #ff0000; font-weight: bold;">server</span>
+<span style="color: #ff0000; font-weight: bold;">env</span>
+<span style="color: #ff0000; font-weight: bold;">files</span>
+<span style="color: #ff0000; font-weight: bold;">header</span>
+</pre>
+
+
+
+<h3><a name="sec4" id="sec4"></a>
+
+获取URL $_GET值</h3>
+
+<pre class="src">
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">example query: ?id=101&amp;sort=desc
+</span>
+<span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">webcontext</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getQuery</span>(<span style="color: #ffff00;">'id'</span>);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">The page key does not exist, null is returned
+</span><span style="color: #c0c0c0; background-color: #000000;">var_dump(</span>$<span style="color: #ffffff; font-weight: bold;">webcontext</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getQuery</span>(<span style="color: #ffff00;">'page'</span>));
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">The page key does not exist, alt is returned
+</span><span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">webcontext</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getQuery</span>(<span style="color: #ffff00;">'page'</span>, <span style="color: #c0c0c0; background-color: #000000;">1</span>);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">fetch entire query
+</span><span style="color: #c0c0c0; background-color: #000000;">print_r(</span>$<span style="color: #ffffff; font-weight: bold;">webcontext</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getQuery</span>());
+</pre>
+
+<p>结果如下：</p>
+
+<pre class="src">
+101
+null
+1
+array('id' =&gt; 101, 'sort' =&gt; 'desc')
+
+</pre>
+
+
+<h3><a name="sec5" id="sec5"></a>
+获取用户提交数据：</h3>
+
+<p class="first">用户提交的数据是<code>$post[key]</code>和<code>$files[key]</code>的组合，且file优先级高于post。</p>
+
+<pre class="src">
+$<span style="color: #ffffff; font-weight: bold;">comment</span> = $<span style="color: #ffffff; font-weight: bold;">webcontext</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getInput</span>(<span style="color: #ffff00;">'comment'</span>);
+
+</pre>
+
+
+<h3><a name="sec6" id="sec6"></a>
+获取HTTP接受头部</h3>
+
+<p class="first">如果想获取<code>'content-type'</code>，请求<code>type</code>即可；如果想获取如<code>'Accept_Language'</code>，请求<code>language</code>即可。</p>
+
+<pre class="src">
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">Accept-Language: en;q=0.7, en-US
+</span>$<span style="color: #ffffff; font-weight: bold;">lang</span> = $<span style="color: #ffffff; font-weight: bold;">webcontext</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getAccept</span>(<span style="color: #ffff00;">'language'</span>);
+<span style="color: #c0c0c0; background-color: #000000;">print_r(</span>$<span style="color: #ffffff; font-weight: bold;">lang</span>);
+
+</pre>
+
+<p>其结果是一个数组；数组的键是接受的值，数组的值是品质因数。结果是按品质因素排序的，第一个结果有最高的品质因素。</p>
+
+<p>示例：</p>
+
+<pre class="src">
+<span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ffff00;">'en-US'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">1</span>.<span style="color: #c0c0c0; background-color: #000000;">0</span>,
+    <span style="color: #ffff00;">'en'</span>    =&gt; <span style="color: #c0c0c0; background-color: #000000;">0</span>.<span style="color: #c0c0c0; background-color: #000000;">7</span>,
+)
+
+</pre>
+
+<hr />
+
+
+
+<h2><a name="sec7" id="sec7"></a>
+魔术引用</h2>
+
+<p class="first">PHP 5.3已经弃用魔术引用，而且默认是禁用的。所以<code>aura\web\Context</code>不再测试或移除魔术引用。</p>
+
+<hr />
+
+<h2><a name="sec8" id="sec8"></a>
+高级用法</h2>
+
+<h3><a name="sec9" id="sec9"></a>
+接收json、xml或其他类型的内容输入</h3>
+
+<p class="first">如果Content-type不是<code>multipart/form-data</code>，且在未经任何处理，POST或PUT请求的原始输入为<code>$key=null</code>。</p>
+
+<p><code>Content-type=text/xml</code>的POST或PUT示例：</p>
+
+<pre class="src">
+$<span style="color: #ffffff; font-weight: bold;">xml</span> = $<span style="color: #ffffff; font-weight: bold;">webcontext</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getInput</span>();
+<span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">xml</span>;
+</pre>
+
+<p>结果：</p>
+
+<pre class="src">
+&lt;<span style="color: #4186be;">xml</span>&gt;
+    &lt;<span style="color: #4186be;">value</span>&gt;Hello world!&lt;/<span style="color: #4186be;">value</span>&gt;
+&lt;/<span style="color: #4186be;">xml</span>&gt;
+</pre>
+
+<h3><a name="sec10" id="sec10"></a>
+重写HTTP请求方法</h3>
+
+<p class="first">HTTP请求方法可以被HTTP头部或POST数组键名覆盖。如果HTTP头部和POST数组有<code>X-HTTP-Method-Override</code>一项，HTTP头部的值优先级最高。</p>
+
+<p>HTTP头部示例：</p>
+
+<pre class="src">
+<span style="color: #c0c0c0; background-color: #000000;">header(</span><span style="color: #ffff00;">'X-HTTP-Method-Override: PUT'</span>);
+
+</pre>
+
+<p>POST示例：</p>
+
+<p>使用<code>X-HTTP-Method-Override</code>作为POST数组键名。 <strong>NOTE:</strong> 键名是大小写敏感的。</p>
+
+<pre class="src">
+&lt;<span style="color: #4186be;">form</span> <span style="color: #ffffff; font-weight: bold;">action</span>=<span style="color: #ffff00;">"/Comment/1"</span> <span style="color: #ffffff; font-weight: bold;">method</span>=<span style="color: #ffff00;">"post"</span>&gt;
+
+    &lt;<span style="color: #4186be;">input</span> <span style="color: #ffffff; font-weight: bold;">type</span>=<span style="color: #ffff00;">"image"</span> <span style="color: #ffffff; font-weight: bold;">src</span>=<span style="color: #ffff00;">"/images/remove-icon.png"</span> <span style="color: #ffffff; font-weight: bold;">alt</span>=<span style="color: #ffff00;">"Delete"</span> /&gt;
+
+    &lt;<span style="color: #4186be;">input</span> <span style="color: #ffffff; font-weight: bold;">name</span>=<span style="color: #ffff00;">"X-HTTP-Method-Override"</span> <span style="color: #ffffff; font-weight: bold;">type</span>=<span style="color: #ffff00;">"hidden"</span> <span style="color: #ffffff; font-weight: bold;">value</span>=<span style="color: #ffff00;">"DELETE"</span> /&gt;
+
+&lt;/<span style="color: #4186be;">form</span>&gt;
+</pre>
+
+<hr />
+
+
+
+<h2><a name="sec11" id="sec11"></a>
+Aura Web Csrf</h2>
+
+<p class="first">一个产生和验证CSRF令牌的类库。<code>aura\web\CSrf</code>构造器有两个必须的参数：</p>
+
+<ol>
+<li><code>$secret_key</code>: 一个随机的字符串，由项目指定。在请求期间应该保持一致。</li>
+<li><code>$user_id</code>: 对用户来唯一的字符串，在请求期间应该保持一致。例如，用户邮件地址或用户表中该用户的主键，任何对用户唯一的字符串都行，除了用户密码。</li>
+</ol>
+
+<p>和两个可选参数：</p>
+
+<ol>
+<li><code>$timeout</code>: CSRF令牌的有效期。默认是1800秒。</li>
+
+<li><code>$hash_algo</code>: 哈希算算法。请查看<a href="http://php.net/hash_algos">hash_algos()</a>，该页列出了所有注册的哈希算法。这里默认使用<code>sha1</code>算法。</li>
+</ol>
+
+<h3><a name="sec12" id="sec12"></a>
+使用Ａura Web CSRF</h3>
+
+<p class="first">创建一个独立的<code>ura\web\Csrf</code>实例：</p>
+
+<pre class="src">
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">web</span>\<span style="color: #ff0000; font-weight: bold;">Csrf</span> <span style="color: #00ffff;">as</span> <span style="color: #ff0000; font-weight: bold;">Csrf</span>;
+
+<span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'/path/to/aura.web/Csrf.php'</span>;
+
+<span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'/path/to/aura.web/Exception/MalformedToken.php'</span>;
+
+$<span style="color: #ffffff; font-weight: bold;">server_secret</span> = <span style="color: #ffff00;">'my-random-secret'</span>;
+$<span style="color: #ffffff; font-weight: bold;">user_id</span>       = $<span style="color: #ffffff; font-weight: bold;">user</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getEmail</span>();
+
+$<span style="color: #ffffff; font-weight: bold;">csrf</span> = <span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Csrf</span>($<span style="color: #ffffff; font-weight: bold;">server_secret</span>, $<span style="color: #ffffff; font-weight: bold;">user_id</span>);
+
+</pre>
+
+<p>产生CSRF令牌：</p>
+
+<pre class="src">
+$<span style="color: #ffffff; font-weight: bold;">token</span> = $<span style="color: #ffffff; font-weight: bold;">csrf</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">generateToken</span>();
+<span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">token</span>;
+
+</pre>
+
+<p>结果如下：</p>
+
+<pre class="src">
+5199173921e7cc91dbee3145088af35e22df1d3|1299425613|2648677304d73a94de97218.48580521
+</pre>
+
+<p>验证令牌：</p>
+
+<pre class="src">
+<span style="color: #00ffff;">try</span> {
+    <span style="color: #00ffff;">if</span> ($<span style="color: #ffffff; font-weight: bold;">csrf</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">isValidToken</span>($<span style="color: #00ff00;">_POST</span>[<span style="color: #ffff00;">'__csrf_token'</span>])) {
+        <span style="color: #00ffff;">echo</span> <span style="color: #ffff00;">'Not a CSRF attack.'</span>;
+    } <span style="color: #00ffff;">else</span> {
+        <span style="color: #00ffff;">echo</span> <span style="color: #ffff00;">'Invalid CSRF token.
+        exit();
+    }
+} catch (Exception_MalformedToken $e) {
+    echo '</span><span style="color: #ff0000; font-weight: bold;">Malformed</span> <span style="color: #ff0000; font-weight: bold;">CSRF</span> <span style="color: #ff0000; font-weight: bold;">token</span>.<span style="color: #ffff00;">';
+    exit();
+}
+
+</span></pre>
+
+
+
+<!-- Page published by Emacs Muse ends here -->
+<a href="#top">返回顶部 ↑</a>
+    </div>
+  </div>
+  <div id="footer">
+    <p>
+      Copyright &copy; 2010 - 2011,
+      <a href="http://roygu.com">Roy Gu</a> Organized by <a href="http://bullsoft.org">Bull Soft</a><br />
+      网站风格及LOGO版权归<a href="http://paul-m-jones.com/">Paul M. Jones</a>及其他<a href="http://www.auraphp.org">Aura Php</a>贡献者所有
+    </p>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,583 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title> </title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/reset.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/text.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/960.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/aura.css" />
+
+  <script src="../js/jquery-1.6.1.min.js"></script>
+  <script>
+    $(document).ready(function()
+    {
+      $('#logo').hide();
+      $('#logo').delay(300).fadeIn(2000);
+    });
+  </script>
+</head>
+
+<body>
+<div id="top">
+  <div id="menu">
+    <a href="/">Home</a><a href="docs/">Documentation</a>
+  </div>
+  <div id="banner">
+    <a href="http://www.auraphp.org/" id="logo"></a>
+  </div>
+  <div id="content">
+    <div class="container_12">
+
+<h1 id="title">aura.router</h1>
+<!-- Page published by Emacs Muse begins here -->
+
+<div class="page-nav">
+    <span class="page-prev"><a href="aura.cli.html">上一页</a></span>
+    <span class="page-next"><a href="aura.view.html">下一页</a></span>
+</div>
+<hr />
+
+<div class="contents">
+
+<dl>
+<dt>
+<a href="#sec1">简介</a>
+</dt>
+<dt>
+<a href="#sec2">基本用法</a>
+</dt>
+<dd>
+<dl>
+<dt>
+<a href="#sec3">映射路由</a>
+</dt>
+<dt>
+<a href="#sec4">区配路由</a>
+
+</dt>
+<dt>
+<a href="#sec5">分配路由</a>
+</dt>
+<dt>
+<a href="#sec6">产生路由路径</a>
+</dt>
+</dl>
+</dd>
+<dt>
+<a href="#sec7">高级用法</a>
+</dt>
+<dd>
+<dl>
+
+<dt>
+<a href="#sec8">长格式路由规范</a>
+</dt>
+<dt>
+<a href="#sec9">短格式路由规范</a>
+</dt>
+<dt>
+<a href="#sec10">附加路由组</a>
+</dt>
+<dt>
+<a href="#sec11">构造期附加路由组</a>
+</dt>
+<dt>
+
+<a href="#sec12">缓存路由</a>
+</dt>
+</dl>
+</dd>
+</dl>
+</div>
+
+
+<hr />
+
+<h2><a name="sec1" id="sec1"></a>
+简介</h2>
+
+<p class="first">Aura Router是一个Web路由器的PHP 5.3+的实现。给定一个URI路径和全局变量<code>$_SERVER</code>，它能够解析出控制器、动作和参数值。</p>
+
+<p>你的应用库或框架期望得到匹配的路由信息，并根据路由信息把请求分配到某个控制器。只要你的系统能够提供URI路径和全局变量<code>$_SERVER</code>，你就可以使用Aura Router。</p>
+
+<p>Aura Router的灵感来自于<a href="http://solarphp.com/manual/dispatch-cycle.rewrite-rules">Solar重写规则</a>和<a href="http://routes.groovie.org/">http://routes.groovie.org</a>。</p>
+
+
+<h2><a name="sec2" id="sec2"></a>
+基本用法</h2>
+
+<h3><a name="sec3" id="sec3"></a>
+映射路由</h3>
+
+<p class="first">要为应用创建一个路由，只需实例化<code>aura\router</code>包中的<code>Map</code>类并调用<code>add()</code>方法。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">create the map object
+</span>$<span style="color: #ffffff; font-weight: bold;">map</span> = <span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'/path/to/aura.router/scripts/instance.php'</span>;
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">add a short-form named route without params
+</span>$<span style="color: #ffffff; font-weight: bold;">map</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">add</span>(<span style="color: #ffff00;">'home'</span>, <span style="color: #ffff00;">'/'</span>);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">add a short-form unnamed route with params
+</span>$<span style="color: #ffffff; font-weight: bold;">map</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">add</span>(<span style="color: #00ff00;">null</span>, <span style="color: #ffff00;">'/{:controller}/{:action}/{:id}'</span>);
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">add a long-form named route
+</span>$<span style="color: #ffffff; font-weight: bold;">map</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">add</span>(<span style="color: #ffff00;">'read'</span>, <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+    <span style="color: #ffff00;">'path'</span> =&gt; <span style="color: #ffff00;">'/blog/read/{:id}{:format}'</span>,
+    <span style="color: #ffff00;">'params'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+        <span style="color: #ffff00;">'id'</span>     =&gt; <span style="color: #ffff00;">'(\d+)'</span>,
+        <span style="color: #ffff00;">'format'</span> =&gt; <span style="color: #ffff00;">'(\..+)?'</span>,
+    ),
+    <span style="color: #ffff00;">'values'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+        <span style="color: #ffff00;">'controller =&gt; '</span><span style="color: #ff0000; font-weight: bold;">blog</span><span style="color: #ffff00;">',
+        '</span><span style="color: #ff0000; font-weight: bold;">action</span><span style="color: #ffff00;">'    =&gt; '</span><span style="color: #ff0000; font-weight: bold;">read</span><span style="color: #ffff00;">'
+        '</span><span style="color: #ff0000; font-weight: bold;">format</span><span style="color: #ffff00;">'    =&gt; '</span><span style="color: #ff0000; font-weight: bold;">html</span><span style="color: #ffff00;">',
+    ),
+));
+
+</span></pre>
+
+<p>推荐把<code>Map</code>对象放置在全局可用的地方；例如：注册表、服务定位器或者依赖注入容器。讨论这些已超出本文档的范围。</p>
+
+
+<h3><a name="sec4" id="sec4"></a>
+区配路由</h3>
+
+<p class="first">要让URI路径区配你的路由映射，只需调用<code>match()</code>方法，并传入路径字符串和<code>$_SERVER</code>值。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">get the incoming request URI path
+</span>$<span style="color: #ffffff; font-weight: bold;">path</span> = <span style="color: #c0c0c0; background-color: #000000;">parse_url(</span>$<span style="color: #00ff00;">_SERVER</span>[<span style="color: #ffff00;">'REQUEST_URI'</span>], <span style="color: #ff0000; font-weight: bold;">PHP_URL_PATH</span>);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">get the route based on the path and server
+</span>$<span style="color: #ffffff; font-weight: bold;">route</span> = $<span style="color: #ffffff; font-weight: bold;">map</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">match</span>($<span style="color: #ffffff; font-weight: bold;">path</span>, $<span style="color: #00ff00;">_SERVER</span>);
+</pre>
+
+<p><code>match()</code>方法内部不直接解析URI路径或使用<code>$_SERVER</code>变量。因为不同的系统环境对于这些信息具有不同的表现形式，比如：一个URI对象或环境对象。只要你能够得到路径字符串和服务器环境数组，你就可以在你的代码库或框架中使用Aura Router。</p>
+
+<p>返回的<code>$route</code>对象将包含一个<code>$values</code>数组，数组元素是路由路径识别的参数值。例如，成功匹配路由路径<code>/{:controller}/{:action}/{:id}</code>将会填充<code>$route-&gt;values</code>数组，其中，数组的键名与路径中待匹配的参数相对应，分别是：<code>controller</code>、<code>action</code>和<code>id</code>。</p>
+
+
+<h3><a name="sec5" id="sec5"></a>
+分配路由</h3>
+
+<p class="first">现在你已经得到路由信息了，你可以开始分配它了。下面的示例将演示：一个代码库或框架系统处理路由信息，然后调用页面控制器的过程。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #00ffff;">if</span> (! $<span style="color: #ffffff; font-weight: bold;">route</span>) {
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">no route object was returned
+
+</span>    <span style="color: #00ffff;">echo</span> <span style="color: #ffff00;">"No application route was found for that URI path."</span>;
+    <span style="color: #00ffff;">exit</span>();
+}
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">does the route indicate a controller?
+</span><span style="color: #00ffff;">if</span> (<span style="color: #c0c0c0; background-color: #000000;">isset(</span>$<span style="color: #ffffff; font-weight: bold;">route</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">values</span>[<span style="color: #ffff00;">'controller'</span>])) {
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">take the controller class directly from the route
+
+</span>    $<span style="color: #ffffff; font-weight: bold;">controller</span> = $<span style="color: #ffffff; font-weight: bold;">route</span>-&gt;<span style="color: #ffffff; font-weight: bold;">values</span>[<span style="color: #ffff00;">'controller'</span>];
+} <span style="color: #00ffff;">else</span> {
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">use a default controller
+</span>    $<span style="color: #ffffff; font-weight: bold;">controller</span> = <span style="color: #ffff00;">'Default'</span>;
+}
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">does the route indicate an action?
+</span><span style="color: #00ffff;">if</span> (<span style="color: #c0c0c0; background-color: #000000;">isset(</span>$<span style="color: #ffffff; font-weight: bold;">route</span>-&gt;<span style="color: #ffffff; font-weight: bold;">values</span>[<span style="color: #ffff00;">'action'</span>])) {
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">take the action method directly from the route
+</span>    $<span style="color: #ffffff; font-weight: bold;">action</span> = $<span style="color: #ffffff; font-weight: bold;">route</span>-&gt;<span style="color: #ffffff; font-weight: bold;">values</span>[<span style="color: #ffff00;">'action'</span>];
+} <span style="color: #00ffff;">else</span> {
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">use a default action
+
+</span>    $<span style="color: #ffffff; font-weight: bold;">action</span> = <span style="color: #ffff00;">'index'</span>;
+}
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">instantiate the controller class
+</span>$<span style="color: #ffffff; font-weight: bold;">page</span> = <span style="color: #00ffff;">new</span> $<span style="color: #ff7f50;">controller</span>();
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">invoke the action method with the route values
+</span><span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">page</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">$action</span>($<span style="color: #ffffff; font-weight: bold;">route</span>-&gt;<span style="color: #ffffff; font-weight: bold;">values</span>);
+</pre>
+
+<p>注意，Aura Router不会为你分配路由；上面的代码只是一个演示如何使用路由信息的简单示例。</p>
+
+
+<h3><a name="sec6" id="sec6"></a>
+产生路由路径</h3>
+
+<p class="first">如果能从路由中得到URI路径，就能很轻松地创建链接。借助Aura Router，这很容易实现，只需要调用<code>Map</code>对象的<code>generate()</code>方法，并提供路由名称即可。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">$path =&gt; "/blog/read/42.atom"
+
+</span>$<span style="color: #ffffff; font-weight: bold;">path</span> = $<span style="color: #ffffff; font-weight: bold;">map</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">generate</span>(<span style="color: #ffff00;">'read'</span>, <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ffff00;">'id'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">42</span>,
+    <span style="color: #ffff00;">'format'</span> =&gt; <span style="color: #ffff00;">'.atom'</span>,
+));
+
+$<span style="color: #ffffff; font-weight: bold;">href</span> = <span style="color: #c0c0c0; background-color: #000000;">htmlspecialchars(</span>$<span style="color: #ffffff; font-weight: bold;">path</span>, <span style="color: #ffff00;">'UTF-8'</span>);
+
+<span style="color: #00ffff;">echo</span> <span style="color: #ffff00;">'&lt;a href="$href"&gt;Atom feed for this blog entry&lt;/a&gt;'</span>;
+</pre>
+
+<p>Aura Router不会处理动态匹配的路由；每个路由都必须要有一个名字以便产生URI路径。</p>
+
+<p>上面的示例表明，向<code>generate()</code>方法传递一个数据数组作为第二个参数将会把数据插入到路由路径中。第二个参数是可选的。如果有不匹配数据数组键名的路径参数，那些参数<code>{:param}</code>将会被保留。如果有不匹配路由参数的数据数组键名，那些值将不会添加到路由路径中。</p>
+
+<hr />
+
+
+
+<h2><a name="sec7" id="sec7"></a>
+高级用法</h2>
+
+<h3><a name="sec8" id="sec8"></a>
+长格式路由规范</h3>
+
+<p class="first">当你添加路由时，你需要定义一个数组，数组键名必须是以下名称中的一个或多个：</p>
+
+<ul>
+
+<li><code>path</code> &mdash; 此路由代表的路径。路径中可能会包含<code>{:param}</code>形式的参数标记。如果你想为参数定义正则表达式的子模式，你可以在<code>params</code>部分为其定义键名，又或是在行内以这种方式定义：<code>{:id:(\d+)}</code>。</li>
+<li><code>params</code> &mdash; 路径参数的正则表达式子模式；行内参数将会覆盖这些设置。例如：</li>
+</ul>
+
+<pre class="src">
+<span style="color: #ffff00;">'params'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ffff00;">'id'</span> =&gt; <span style="color: #ffff00;">'(\d+)'</span>,
+)
+</pre>
+
+<ul>
+<li><code>values</code> &mdash; 路由的默认值。区配的参数将会覆盖这些设置。</li>
+</ul>
+
+<pre class="src">
+<span style="color: #ffff00;">'values'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ffff00;">'controller'</span> =&gt; <span style="color: #ffff00;">'blog'</span>,
+    <span style="color: #ffff00;">'action'</span> =&gt; <span style="color: #ffff00;">'read'</span>,
+    <span style="color: #ffff00;">'id'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">1</span>,
+)
+
+</pre>
+
+<ul>
+<li><code>method</code> &mdash; 
+<code>$server['REQUEST_METHOD']</code>必须匹配这些值。</li>
+<li><code>secure</code> &mdash; 当此值为<code>true</code>时，必须开启<code>$server['HTTPS']</code>，或者请求必须在443端口（译者注：而不是80端口）；当此值为<code>false</code>时，上面的要求都不成立。</li>
+
+<li><code>routable</code> &mdash; 当此值为<code>false</code>时，路由将不会用来区配路径，仅仅作为产生路径的规则。</li>
+<li><code>is_match</code> &mdash; 自定义回调或闭包，形式如：<code>function(array $server, \ArrayObject $matches)</code>，当匹配时返回真，不匹配时返回假。这就允许开发者建立任何形式的匹配逻辑，并能修改从路径中匹配的参数值<code>$matches</code>。</li>
+<li><code>generate</code> &mdash; 自定义回调或闭包，形式如：<code>function(\aura\router\Route $route, array $data)</code>，当产生路径时，返回一个修改过的数组<code>$data</code>。</li>
+
+</ul>
+
+<p>下面是一个完整的长格式路由规范，路由名为<code>read</code>，包含上面提到的所有键名：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">map</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">add</span>(<span style="color: #ffff00;">'read'</span>, <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+    <span style="color: #ffff00;">'path'</span> =&gt; <span style="color: #ffff00;">'/blog/read/{:id}{:format}'</span>,
+    <span style="color: #ffff00;">'params'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+        <span style="color: #ffff00;">'id'</span> =&gt; <span style="color: #ffff00;">'(\d+)'</span>,
+        <span style="color: #ffff00;">'format'</span> =&gt; <span style="color: #ffff00;">'(\..+)?'</span>,
+    ),
+    <span style="color: #ffff00;">'values'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+        <span style="color: #ffff00;">'controller'</span> =&gt; <span style="color: #ffff00;">'blog'</span>,
+        <span style="color: #ffff00;">'action'</span> =&gt; <span style="color: #ffff00;">'read'</span>,
+        <span style="color: #ffff00;">'id'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">1</span>,
+        <span style="color: #ffff00;">'format'</span> =&gt; <span style="color: #ffff00;">'.html'</span>,
+    ),
+    <span style="color: #ffff00;">'secure'</span> =&gt; <span style="color: #00ff00;">false</span>,
+    <span style="color: #ffff00;">'method'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span><span style="color: #ffff00;">'GET'</span>),
+    <span style="color: #ffff00;">'routable'</span> =&gt; <span style="color: #00ff00;">true</span>,
+    <span style="color: #ffff00;">'is_match'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">function(</span><span style="color: #ff7f50;">array</span> $<span style="color: #ffffff; font-weight: bold;">server</span>, \<span style="color: #ff0000; font-weight: bold;">ArrayObject</span> $<span style="color: #ffffff; font-weight: bold;">matches</span>) {
+
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">disallow matching if referred from example.com
+
+</span>        <span style="color: #00ffff;">if</span> ($<span style="color: #ffffff; font-weight: bold;">server</span>[<span style="color: #ffff00;">'HTTP_REFERER'</span>] == <span style="color: #ffff00;">'http://example.com'</span>) {
+            <span style="color: #00ffff;">return</span> <span style="color: #00ff00;">false</span>;
+        }
+
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">add the referer from $server to the match values
+</span>        $<span style="color: #ffffff; font-weight: bold;">matches</span>[<span style="color: #ffff00;">'referer'</span>] = $<span style="color: #ffffff; font-weight: bold;">server</span>[<span style="color: #ffff00;">'HTTP_REFERER'</span>];
+        <span style="color: #00ffff;">return</span> <span style="color: #00ff00;">true</span>;
+
+    },
+    <span style="color: #ffff00;">'generate'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">function(</span>\<span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">router</span>\<span style="color: #ff0000; font-weight: bold;">Route</span> $<span style="color: #ffffff; font-weight: bold;">route</span>, <span style="color: #ff7f50;">array</span> $<span style="color: #ffffff; font-weight: bold;">data</span>) {
+        $<span style="color: #ffffff; font-weight: bold;">data</span>[<span style="color: #ffff00;">'foo'</span>] = <span style="color: #ffff00;">'bar'</span>;
+        <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">data</span>;
+    }
+));
+
+</pre>
+
+<p>注意，使用闭包而不是回调意味着：你不能使用<code>serialize()</code>和<code>var_export</code>函数序列化或或导出路由映射，也意味着你不能缓存路由映射。</p>
+
+
+<h3><a name="sec9" id="sec9"></a>
+短格式路由规范</h3>
+
+<p class="first">你完全可以使用长格式路由规范。如果你向路由传递一个字符串而非数组　。。。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">map</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">add</span>(<span style="color: #ffff00;">'archive'</span>, <span style="color: #ffff00;">'/archive/{:year}/{:month}/{:day}'</span>);
+</pre>
+
+<p>。。。那么Aura Router将会使用默认的子模式去匹配路径参数（匹配除斜线“/”外的所有字符），并且把路由名称作为默认的动作<code>'action'</code>。因此，上述短格式路由相当于下面的长格式路由：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">map</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">add</span>(<span style="color: #ffff00;">'archive'</span>, <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ffff00;">'path'</span> =&gt; <span style="color: #ffff00;">'/archive/{:year}/{:month}/{:day}'</span>,
+    <span style="color: #ffff00;">'params'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+        <span style="color: #ffff00;">'year'</span>  =&gt; <span style="color: #ffff00;">'([^/]+)'</span>,
+        <span style="color: #ffff00;">'month'</span> =&gt; <span style="color: #ffff00;">'([^/]+)'</span>,
+        <span style="color: #ffff00;">'day'</span>   =&gt; <span style="color: #ffff00;">'([^/]+)'</span>,
+    ),
+    <span style="color: #ffff00;">'values'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+        <span style="color: #ffff00;">'action'</span> =&gt; <span style="color: #ffff00;">'archive'</span>,
+    ),
+));
+</pre>
+
+
+<h3><a name="sec10" id="sec10"></a>
+附加路由组</h3>
+
+<p class="first">你可以在你应用中的单个“挂载点”下一次性添加一系列路由规则。例如：如果你想把所有和博客相关的路由都挂载到<code>'/blog'</code>下，你可以这么做：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">map</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">attach</span>(<span style="color: #ffff00;">'/blog'</span>, <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">the routes to attach
+
+</span>    <span style="color: #ffff00;">'routes'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">a short-form route named 'browse'
+</span>        <span style="color: #ffff00;">'browse'</span> =&gt; <span style="color: #ffff00;">'/'</span>,
+
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">a long-form route named 'read'
+
+</span>        <span style="color: #ffff00;">'read'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+            <span style="color: #ffff00;">'path'</span> =&gt; <span style="color: #ffff00;">'/{:id}{:format}'</span>,
+            <span style="color: #ffff00;">'params'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+                <span style="color: #ffff00;">'id'</span>     =&gt; <span style="color: #ffff00;">'(\d+)'</span>,
+                <span style="color: #ffff00;">'format'</span> =&gt; <span style="color: #ffff00;">'(\.json|\.atom)?'</span>
+            ),
+            <span style="color: #ffff00;">'values'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+                <span style="color: #ffff00;">'format'</span> =&gt; <span style="color: #ffff00;">'.html'</span>,
+            ),
+        ),
+
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">a short-form route named 'edit'
+</span>        <span style="color: #ffff00;">'edit'</span> =&gt; <span style="color: #ffff00;">'/{:id:(\d+)}/edit'</span>,
+    ),
+));
+</pre>
+
+<p>每个路由路径都会加上<code>/blog</code>前缀，因此有效的路径将变成：</p>
+
+<ul>
+<li><code>browse: /blog/</code></li>
+<li><code>read: /blog/{:id}{:format}</code></li>
+<li><code>edit: /blog/{:id}/edit</code></li>
+</ul>
+
+<p>你还可以在附加路由数组中设置其他的键名；这些设置将会被每个附加路由作为默认设置使用，所以你无需重复设置共用的信息：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">map</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">attach</span>(<span style="color: #ffff00;">'/blog'</span>, <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">common params for the routes
+
+</span>    <span style="color: #ffff00;">'params'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+        <span style="color: #ffff00;">'id'</span>     =&gt; <span style="color: #ffff00;">'(\d+)'</span>,
+        <span style="color: #ffff00;">'format'</span> =&gt; <span style="color: #ffff00;">'(\.json|\.atom)?'</span>,
+    ),
+
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">common values for the routes
+
+</span>    <span style="color: #ffff00;">'values'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+        <span style="color: #ffff00;">'controller'</span> =&gt; <span style="color: #ffff00;">'blog'</span>,
+        <span style="color: #ffff00;">'format'</span>     =&gt; <span style="color: #ffff00;">'.html'</span>,
+    ),
+
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">the routes to attach
+
+</span>    <span style="color: #ffff00;">'routes'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+        <span style="color: #ffff00;">'browse'</span> =&gt; <span style="color: #ffff00;">'/'</span>,
+        <span style="color: #ffff00;">'read'</span>   =&gt; <span style="color: #ffff00;">'/{:id}{:format}'</span>,
+        <span style="color: #ffff00;">'edit'</span>   =&gt; <span style="color: #ffff00;">'/{:id}/edit'</span>,
+    ),
+));
+
+</pre>
+
+
+<h3><a name="sec11" id="sec11"></a>
+构造期附加路由组</h3>
+
+<p class="first">你可以在某个附加路由数组中配置你的路由，然后把将其传递给<code>Map</code>构造器。这允许你分开进行路由配置和路由构造。</p>
+
+<p>注意：你可以为每个附加路由组指定一个前缀<code>name_prefix</code>作为通用路由信息的一部分；该组的路由名称将会以此值作为前缀。这能够帮助解决不同路由组中相同路由名称冲突的问题。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">attach</span> = <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">attach to /blog
+</span>    <span style="color: #ffff00;">'/blog'</span> =<span style="color: #00ff00;">&gt;</span> <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">prefix for route names
+</span>        <span style="color: #ffff00;">'name_prefix'</span> =&gt; <span style="color: #ffff00;">'projectname.blog.'</span>,
+
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">common params for the routes
+</span>        <span style="color: #ffff00;">'params'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+            <span style="color: #ffff00;">'id'</span> =&gt; <span style="color: #ffff00;">'(\d+)'</span>,
+            <span style="color: #ffff00;">'format'</span> =&gt; <span style="color: #ffff00;">'(\.json|\.atom)?'</span>,
+        ),
+
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">common values for the routes
+</span>        <span style="color: #ffff00;">'values'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+            <span style="color: #ffff00;">'controller'</span> =&gt; <span style="color: #ffff00;">'blog'</span>,
+            <span style="color: #ffff00;">'format'</span> =&gt; <span style="color: #ffff00;">'.html'</span>,
+        ),
+
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">the routes to attach
+</span>        <span style="color: #ffff00;">'routes'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+            <span style="color: #ffff00;">'browse'</span> =&gt; <span style="color: #ffff00;">'/'</span>,
+            <span style="color: #ffff00;">'read'</span> =&gt; <span style="color: #ffff00;">'path'</span> =&gt; <span style="color: #ffff00;">'/{:id}{:format}'</span>,
+            <span style="color: #ffff00;">'edit'</span> =&gt; <span style="color: #ffff00;">'/{:id}/edit'</span>,
+        ),
+    ),
+
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">attach to '/forum'
+
+</span>    <span style="color: #ffff00;">'/forum'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">prefix for route names
+</span>        <span style="color: #ffff00;">'name_prefix'</span> =&gt; <span style="color: #ffff00;">'projectname.forum.'</span>,
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">...
+
+</span>    ),
+
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">attach to '/wiki'
+</span>    <span style="color: #ffff00;">'/wiki'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">prefix for route names
+</span>        <span style="color: #ffff00;">'name_prefix'</span> =&gt; <span style="color: #ffff00;">'projectname.wiki.'</span>,
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">...
+
+</span>    ),
+);
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">create the route factory
+</span>$<span style="color: #ffffff; font-weight: bold;">route_factory</span> = <span style="color: #ff0000; font-weight: bold;">new</span> \<span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">router</span>\<span style="color: #ff0000; font-weight: bold;">RouteFactory</span>;
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">create a Map with attached route groups
+</span>$<span style="color: #ffffff; font-weight: bold;">map</span> = <span style="color: #ff0000; font-weight: bold;">new</span> \<span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">router</span>\<span style="color: #c0c0c0; background-color: #000000;">Map(</span>$<span style="color: #ffffff; font-weight: bold;">route_factory</span>, $<span style="color: #ffffff; font-weight: bold;">attach</span>);
+
+</pre>
+
+<p>在开发模块化应用程序时，这个技巧就显得尤其有用了。每个程序都可以返回自己的路由组配置，然后系统配置机制将会把每个路由组合并到同一个数组中以供<code>Map</code>使用。例如：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">get a routes array from each application packages
+</span>$<span style="color: #ffffff; font-weight: bold;">attach</span> = <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+    <span style="color: #ffff00;">'/blog'</span>  =<span style="color: #00ff00;">&gt;</span> <span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'projectname/blog/routes.php'</span>,
+    <span style="color: #ffff00;">'/forum'</span> =&gt; <span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'projectname/forum/routes.php'</span>,
+    <span style="color: #ffff00;">'/wiki'</span>  =&gt; <span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'projectname/wiki/routes.php'</span>,
+);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">create the route factory
+</span>$<span style="color: #ffffff; font-weight: bold;">route_factory</span> = <span style="color: #ff0000; font-weight: bold;">new</span> \<span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">router</span>\<span style="color: #ff0000; font-weight: bold;">RouteFactory</span>;
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">create a Map with attached route groups
+
+</span>$<span style="color: #ffffff; font-weight: bold;">map</span> = <span style="color: #ff0000; font-weight: bold;">new</span> \<span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">router</span>\<span style="color: #c0c0c0; background-color: #000000;">Map(</span>$<span style="color: #ffffff; font-weight: bold;">route_factory</span>, $<span style="color: #ffffff; font-weight: bold;">attach</span>);
+
+</pre>
+
+
+<h3><a name="sec12" id="sec12"></a>
+缓存路由</h3>
+
+<p class="first">在产品发布的时候，你可能会希望缓存路由映射，避免<code>Map</code>对象在每次页面加载时都重新构造路由对象。<code>getRoutes()</code>和<code>setRoutes()</code>方法就是为此设计的。</p>
+
+<p>下面是一个使用<code>Map</code>对象实现路由文缓存和恢复(基于文件)的简单示例。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">create a Map object
+</span>$<span style="color: #ffffff; font-weight: bold;">map</span> = <span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'/path/to/aura.router/instance.php'</span>;
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">the cache file location
+</span>$<span style="color: #ffffff; font-weight: bold;">cache</span> = <span style="color: #ffff00;">'/path/to/routes.cache'</span>;
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">does the cache exist?
+</span><span style="color: #00ffff;">if</span> (<span style="color: #c0c0c0; background-color: #000000;">file_exists(</span>$<span style="color: #ffffff; font-weight: bold;">cache</span>)) {
+
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">restore from the cache
+</span>    $<span style="color: #ffffff; font-weight: bold;">routes</span> = <span style="color: #c0c0c0; background-color: #000000;">unserialize(file_get_contents(</span>$<span style="color: #ffffff; font-weight: bold;">cache</span>));
+    $<span style="color: #ffffff; font-weight: bold;">map</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">setRoutes</span>($<span style="color: #ffffff; font-weight: bold;">routes</span>);
+
+} <span style="color: #00ffff;">else</span> {
+
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">build the map routes using add() and attach() ...
+
+</span>    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">... ... ...
+</span>    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">... then save to the cache for the next page load
+</span>    $<span style="color: #ffffff; font-weight: bold;">routes</span> = $<span style="color: #ffffff; font-weight: bold;">map</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getRoutes</span>();
+    <span style="color: #c0c0c0; background-color: #000000;">file_put_contents(</span>$<span style="color: #ffffff; font-weight: bold;">cache</span>, <span style="color: #c0c0c0; background-color: #000000;">serialize(</span>$<span style="color: #ffffff; font-weight: bold;">routes</span>));
+
+}
+
+</pre>
+
+<p>注意，如果在路由定义中存在闭包，你就不能缓存<code>Map</code>路由。这是因为闭包不能正确地被缓存。如果你希望使用缓存策略，建议你使用传统的回调形式而不是闭包。</p>
+
+
+
+<!-- Page published by Emacs Muse ends here -->
+<a href="#top">返回顶部 ↑</a>
+    </div>
+  </div>
+  <div id="footer">
+    <p>
+      Copyright &copy; 2010 - 2011,
+      <a href="http://roygu.com">Roy Gu</a> Organized by <a href="http://bullsoft.org">Bull Soft</a><br />
+      网站风格及LOGO版权归<a href="http://paul-m-jones.com/">Paul M. Jones</a>及其他<a href="http://www.auraphp.org">Aura Php</a>贡献者所有
+    </p>
+  </div>
+</div>
+
+</body>
+</html>

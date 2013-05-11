@@ -1,77 +1,144 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Auraphp by BullSoft</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/main.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 
-  </head>
-  <body>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title> </title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
-      <header>
-        <h1>Auraphp</h1>
-        <p>AuraPHP Chinese Manual</p>
-      </header>
+  <link rel="stylesheet" type="text/css" media="screen" href="css/reset.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="css/text.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="css/960.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="css/aura.css" />
 
-      <div id="banner">
-        <span id="logo"></span>
+  <script src="js/jquery-1.6.1.min.js"></script>
+  <script>
+    $(document).ready(function()
+    {
+      $('#logo').hide();
+      $('#logo').delay(300).fadeIn(2000);
+    });
+  </script>
+</head>
 
-        <a href="https://github.com/BullSoft/auraphp" class="button fork"><strong>View On GitHub</strong></a>
-        <div class="downloads">
-          <span>Downloads:</span>
-          <ul>
-            <li><a href="https://github.com/BullSoft/auraphp/zipball/master" class="button">ZIP</a></li>
-            <li><a href="https://github.com/BullSoft/auraphp/tarball/master" class="button">TAR</a></li>
-          </ul>
-        </div>
-      </div><!-- end banner -->
+<body>
+<div id="top">
+  <div id="menu">
+    <a href="/">Home</a><a href="docs/">Documentation</a>
+  </div>
+  <div id="banner">
+    <a href="http://www.auraphp.org/" id="logo"></a>
+  </div>
+  <div id="content">
+    <div class="container_12">
+      <div class='grid_4'>
+<h2>简介</h2>
 
-    <div class="wrapper">
-      <nav>
-        <ul></ul>
-      </nav>
-      <section>
-        <h3>Welcome to GitHub Pages.</h3>
+<p>Aura项目实际上是Solar框架的第二版，抛弃了Solar框架中的服务定位，使用依赖注入重新构思和架构新框架。至于框架名字从Solar变为Aura，主要是要避免和Apache的Solr项目混淆。</p>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p>Aura项目刚启动不久，正在紧张地开发中。欢迎大家分支Aura各类库包或Aura系统，并帮助我们为PHP 5.3+保持和维护高品质的代码。</p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+<p>加入邮件列表：http://groups.google.com/group/auraphp或到IRC上找我们(Freenode at <code>#auraphp</code>)。</p>
+</div><div class='grid_8'>
+<h2>从这里开始</h2>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>因为Aura项目刚启动没多久，所以还有很多不完善的地方。但我们已经有一个完整的Aura的骨架，可以用来开发Aura类库；点击<a href='https://github.com/auraphp/system'>这里</a>了解更多。</p>
 
-<h3>Designer Templates</h3>
+<p>因为Aura项目刚启动没多久，所以还有很多不完善的地方。但我们已经有一个完整的Aura的骨架，可以用来开发Aura类库；点击这里了解更多。</p>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<ul>
+<li><a href='https://github.com/auraphp/aura.autoload'>Autoload</a> for a PSR-0 compliant autoloader</li>
 
-<h3>Rather Drive Stick?</h3>
+<li><a href='https://github.com/auraphp/aura.di'>DI</a> for dependency injection</li>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<li><a href='https://github.com/auraphp/aura.signal'>Signal</a> for signal slots / event handling</li>
 
-<h3>Authors and Contributors</h3>
+<li><a href='https://github.com/auraphp/aura.signal'>Cli</a> for tools to build command-line controllers</li>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<li><a href='https://github.com/auraphp/aura.router'>Router</a> for web routing independent of any particular framework</li>
+</ul>
 
-<h3>Support or Contact</h3>
+<h2>项目背景</h2>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
-      <footer>
-        <p>Project maintained by <a href="https://github.com/BullSoft">BullSoft</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></small></p>
-      </footer>
+<p>Aura项目实际上是<a href='http://solarphp.com'>Solar框架</a>的第二版，抛弃了Solar框架中的服务定位，使用依赖注入重新构思和架构新框架。至于框架名字从Solar变为Aura，主要是要避免和Apache的Solr项目混淆。 </p>
+</div><div class='clear'>&nbsp;</div><div class='grid_4'>
+<h2>类库第一，框架第二</h2>
+
+<p>译者插队：让我想起了比赛时的口号，“友谊第一，比赛第二”，希望这不仅仅是口号。 :) Aura的主要目标是提供高品质的、经良好测试过的且可以在任何代码库中使用的类库包。这意味着开发人员可以按自己需求使用Aura项目，小到一个类、包，大到整个框架。</p>
+
+<p>Aura将会提供足够的类库以形成一个完整的框架。我们将会为应用程序开发提供一个系统代码源，把所有类库纳入到一个统一的框架中。</p>
+
+<h2>编码规范</h2>
+
+<p>Aura项目的所有类库、包都遵循Horde/Pear/Solar/Zend <a href='http://pear.php.net/manual/en/coding-standards.php'>编码标准</a>。特别是：</p>
+
+<ul>
+<li>不使用公共属性，除非通过<strong>get()/</strong>set()方法使用魔术。 </li>
+
+<li>受保护成员不再以下划线开始。</li>
+
+<li>保留Solar中使用的词汇。</li>
+</ul>
+</div><div class='grid_8'>
+<h2>Goals and Standards</h2>
+
+<p>These goals and standards are presented in relation to <a href='http://solarphp.com'>Solar</a>.</p>
+
+<h3>PHP 5.3+</h3>
+
+<p>Aura项目充分利用PHP 5.3+的特性。这意味着正式的名字空间、匿名函数、闭包、延迟静态绑定以及其他PHP < 5.2.x不具备的特性。特别是：</p>
+
+<ul>
+<li>使用工作区名称("Aura")作为顶级名字空间，包名称("di", "router", "web", "cli"等）作为二级名字空间；</li>
+
+<li>允许子名字空间。子名字空间并不是子包的名称，也不能独立使用。</li>
+
+<li>类不具备子名字空间。如："Exception"类并不具有"Exception"或"exception"子名字空间。要使类具有子名字空间，使用子类形式("Exception_")或把类加入子名字空间即可。</li>
+</ul>
+
+<h3>自完备</h3>
+
+<p>为了达到“类库第一”的目标，所有包都是自完备的，且提供独立下载。某些情况下，包的独立性可能会导致不同包之间会存在重复代码。其他情况下，可能需要数据传送对象在不同包之前传递信息，这样才能做到真正的独立，让开发者在其他代码库中也能轻松使用。</p>
+
+<p>有些时候，不可能做到完全的自完备。在这些情况下，我们将会尽量最少地依赖外部包。那些需要依赖外部包的包目录下将会有一个<code>DEPENDS</code>文件，用于指示所有依赖的包。</p>
+</div><div class='clear'>&nbsp;</div><div class='grid_4'>
+<h2>核心技术</h2>
+
+<ul>
+<li>使用依赖注入取代服务定位（Solar::dependency()系统）；主要体现：<a href="https://github.com/auraphp/aura.di">https://github.com/auraphp/aura.di</a>。</li>
+<li>高效、合理的使用闭包和匿名函数，主要用于依赖注入时的对象创建过程。</li>
+<li>多使用显式映射，而不是每次都自动搜寻目录栈。</li>
+<li>实现功能时尽可能通过依赖注入，而不是通过继承和基类。</li>
+<li>使用工厂作为通用对象创造器，而不是特殊的适配器创造器。</li>
+
+<li>始终支持Windows Vista/7，以便Windows用户一开始就能加入到社区。</li>
+</ul>
+</div><div class='grid_8'>
+<h2>转换优先</h2>
+
+<p>优先考虑从<a href='http://solarphp.com'>Solar</a>类和包转换。下面是转换细节：</p>
+
+<ul>
+<li>首先是WEB应用的动态调度周期：引导程序、前端控制器、页面控制器和视图。</li>
+
+<li>其次是CLI及其支撑类。</li>
+<li>数据库和模型相关的工作留到后面。</li>
+<li>基于包的CLI控制器。</li>
+<li>本地化应该是包级别的，而不是类级别。</li>
+<li>让CLI和WEB控制器共享相同词汇和执行模式。</li>
+<li>在Aura中使用PHP单元测试。始终坚持写测试。目标是：每次代码提交100%的覆盖率。</li>
+</ul>
+</div>
+      <div class="clear"></div>
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
-  </body>
+  </div>
+  <div id="footer">
+    <p>
+      Copyright &copy; 2010 - 2011,
+      <a href="http://roygu.com">Roy Gu</a> Organized by <a href="http://bullsoft.org">Bull Soft</a><br />
+      网站风格及LOGO版权归<a href="">Paul M. Jones</a>及其他<a href="http://auraphp.github.com">Aura Php</a>贡献者所有
+    </p>
+  </div>
+</div>
+
+</body>
 </html>

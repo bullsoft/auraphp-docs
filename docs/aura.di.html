@@ -1,0 +1,724 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title> </title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/reset.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/text.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/960.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/aura.css" />
+
+  <script src="../js/jquery-1.6.1.min.js"></script>
+  <script>
+    $(document).ready(function()
+    {
+      $('#logo').hide();
+      $('#logo').delay(300).fadeIn(2000);
+    });
+  </script>
+</head>
+
+<body>
+<div id="top">
+  <div id="menu">
+    <a href="/">Home</a><a href="docs/">Documentation</a>
+  </div>
+  <div id="banner">
+    <a href="http://www.auraphp.org/" id="logo"></a>
+  </div>
+  <div id="content">
+    <div class="container_12">
+
+<h1 id="title">aura.di</h1>
+<!-- Page published by Emacs Muse begins here -->
+
+<div class="page-nav">
+    <span class="page-prev"><a href="aura.autoload.html">上一页</a></span>
+    <span class="page-next"><a href="aura.signal.html">下一页</a></span>
+</div>
+<hr />
+
+<div class="contents">
+<dl>
+<dt>
+<a href="#sec1">简介</a>
+</dt>
+<dt>
+<a href="#sec2">实例化Manager</a>
+</dt>
+<dt>
+<a href="#sec3">设置服务</a>
+</dt>
+<dd>
+<dl>
+<dt>
+
+<a href="#sec4">变体二：延迟加载</a>
+</dt>
+<dt>
+<a href="#sec5">变体三：构造器参数</a>
+</dt>
+<dt>
+<a href="#sec6">变体四：类构造器参数</a>
+</dt>
+<dt>
+<a href="#sec7">变体四…：覆盖类构造器参数</a>
+</dt>
+</dl>
+</dd>
+
+<dt>
+<a href="#sec8">获取服务</a>
+</dt>
+<dt>
+<a href="#sec9">继承构造器参数</a>
+</dt>
+<dt>
+<a href="#sec10">工厂和依赖实践</a>
+</dt>
+<dt>
+<a href="#sec11">setter注入</a>
+</dt>
+<dt>
+
+<a href="#sec12">子容器</a>
+</dt>
+<dt>
+<a href="#sec13">总结</a>
+</dt>
+</dl>
+</div>
+
+
+<hr />
+
+<h2><a name="sec1" id="sec1"></a>
+简介</h2>
+
+<p class="first">Aura DI包提供了依赖注入的容器系统，有以下特性：</p>
+
+<ul>
+<li>原生支持基于构造函数和setter函数的注入</li>
+<li>延迟加载服务</li>
+<li>setter函数和构造函数的参数配置是可继续的</li>
+</ul>
+
+<p>当与工厂类一起使用时，你可以分开进行对象配置，对象构造和对象使用，为开发者提供更大的灵活性和更好的可测试性。虽然想更充分地介绍依赖注入的性质和好处，但超出了本文档的范围。如需更详细地了解“控制反转”和“依赖注入”，请参考Martin Fowler写的文章<a href="http://martinfowler.com/articles/injection.html">http://martinfowler.com/articles/injection.html</a>。</p>
+
+<hr />
+
+
+<h2><a name="sec2" id="sec2"></a>
+实例化Manager</h2>
+
+<p class="first">Aura DI包内部存在一个返回新DI实例的instance脚本：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">di</span> = <span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'/path/to/aura.di/scripts/instance.php'</span>;
+
+</pre>
+
+<p>另外，你也可以把Aura DI的<code>'src/'</code>目录添加到自动加载器中，然后使用下面方法实例化：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">di</span>\<span style="color: #ff0000; font-weight: bold;">Manager</span>;
+
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">di</span>\<span style="color: #ff0000; font-weight: bold;">Forge</span>;
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">di</span>\<span style="color: #ff0000; font-weight: bold;">Config</span>;
+$<span style="color: #ffffff; font-weight: bold;">di</span> = <span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Manager</span>(<span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Forge</span>(<span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Config</span>));
+
+</pre>
+
+<p><code>Manager</code>就是DI容器本身。其支撑对象有：</p>
+
+<ul>
+<li>Config对象：收集、获取、合并setter函数和构造函数的参数</li>
+<li>对象：创建对象时使用统一的Config（配置）参数</li>
+</ul>
+
+<p>我们不需要直接操作支撑对象；而是通过<code>Manager</code>的方法来使用它们。</p>
+
+<hr />
+
+
+<h2><a name="sec3" id="sec3"></a>
+设置服务</h2>
+
+<p class="first">我们将在下面的示例中设置一个数据库连接的服务。数据库连接类定义如下：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">namespace</span> <span style="color: #ff0000; font-weight: bold;">example</span>\<span style="color: #ff0000; font-weight: bold;">package</span>;
+
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">Database</span>
+{
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">__construct</span>($<span style="color: #ffffff; font-weight: bold;">hostname</span>, $<span style="color: #ffffff; font-weight: bold;">username</span>, $<span style="color: #ffffff; font-weight: bold;">password</span>)
+    {
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">... make the database connection
+
+</span>    }
+}
+</pre>
+
+<p>我们将分四个步骤来讲解DI容器的用法，从最简单的服务创建到更复杂的应用。每种变体都是正确的用法，也都反映了DI容器的优缺点。
+<h3>变体一：贪婪加载</h3></p>
+
+<p>在这种变种中，我们使用<code>new</code>操作符实例化对象，并创建服务。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'database'</span>, <span style="color: #ff0000; font-weight: bold;">new</span> \<span style="color: #ff0000; font-weight: bold;">example</span>\<span style="color: #ff0000; font-weight: bold;">package</span>\<span style="color: #c0c0c0; background-color: #000000;">Database(</span>
+
+    <span style="color: #ffff00;">'localhost'</span>, <span style="color: #ffff00;">'user'</span>, <span style="color: #ffff00;">'passwd'</span>
+));
+</pre>
+
+<p>这种方法在设置服务的时候就创建了数据库对象。无论我们将来是否要从容器取回对象，它总是被创建的。</p>
+
+
+<h3><a name="sec4" id="sec4"></a>
+变体二：延迟加载</h3>
+
+<p class="first">在这种变体中，我们在闭包中创建服务，仍然使用<code>new</code>操作符。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'database'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) {
+    <span style="color: #00ffff;">return</span> <span style="color: #ff0000; font-weight: bold;">new</span> \<span style="color: #ff0000; font-weight: bold;">example</span>\<span style="color: #ff0000; font-weight: bold;">package</span>\<span style="color: #c0c0c0; background-color: #000000;">Database(</span><span style="color: #ffff00;">'localhost'</span>, <span style="color: #ffff00;">'user'</span>, <span style="color: #ffff00;">'passwd'</span>);
+});
+
+</pre>
+
+<p>当我们使用<code>$di-&gt;get('database')</code>从容器中取回服务时才会创建数据库对象。在闭包中实例化对象可以实现延迟加载数据库对象；如果我们不调用<code>$di-&gt;get('database')</code>方法取回对象，那么该对象永远不会被创建。</p>
+
+
+<h3><a name="sec5" id="sec5"></a>
+变体三：构造器参数</h3>
+
+<p class="first">在这种变体中，我们将使用<code>$di-&gt;newInstance()</code>方法代替<code>new</code>操作符。为了达到延迟加载的目的，同样在闭包中实例化对象。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'database'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">di</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\Database'</span>, <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+        <span style="color: #ffff00;">'hostname'</span> =&gt; <span style="color: #ffff00;">'localhost'</span>,
+        <span style="color: #ffff00;">'username'</span> =&gt; <span style="color: #ffff00;">'user'</span>,
+        <span style="color: #ffff00;">'password'</span> =&gt; <span style="color: #ffff00;">'passwd'</span>,
+    ));
+});
+
+</pre>
+
+<p><code>newInstance()</code>方法使用<code>Forge</code>对象反射到被实例化类的构造函数上。然后传递关联数组作为类构造器参数。数组中元素的顺序无关紧要，缺失的参数将使用类构造器定义的默认值。</p>
+
+
+<h3><a name="sec6" id="sec6"></a>
+变体四：类构造器参数</h3>
+
+<p class="first">在这种变体中，我们将分开处理<code>Database</code>类的配置过程和延迟实例化过程。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">params</span>[<span style="color: #ffff00;">'example\package\Database'</span>] = <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ffff00;">'hostname'</span> =&gt; <span style="color: #ffff00;">'localhost'</span>,
+    <span style="color: #ffff00;">'username'</span> =&gt; <span style="color: #ffff00;">'user'</span>,
+    <span style="color: #ffff00;">'password'</span> =&gt; <span style="color: #ffff00;">'passwd'</span>,
+);
+
+$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'database'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">di</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\Database'</span>);
+});
+
+</pre>
+
+<p>作为对象创建的一部分，<code>Forge</code>对象检查传递的<code>$di-&gt;params</code>参数值。这些值在类实例化时将会和构造器默认参数合并，并把合并后的结果传递给构造器（同样，数组中元素顺序是无关紧要的，键名称和构造器参数名匹配就行）。</p>
+
+<p>到目前为止，我们已经成功地把类配置从类实例化过程分离出来，并且能够从容器中延迟加载服务对象。</p>
+
+
+<h3><a name="sec7" id="sec7"></a>
+变体四…：覆盖类构造器参数</h3>
+
+<p class="first">在这种变体中，我们在实例化对象的时候覆盖<code>$di-&gt;params</code>参数的值。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">params</span>[<span style="color: #ffff00;">'example\package\Database'</span>] = <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+    <span style="color: #ffff00;">'hostname'</span> =&gt; <span style="color: #ffff00;">'localhost'</span>,
+    <span style="color: #ffff00;">'username'</span> =&gt; <span style="color: #ffff00;">'user'</span>,
+    <span style="color: #ffff00;">'password'</span> =&gt; <span style="color: #ffff00;">'passwd'</span>,
+);
+
+$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'database'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">di</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\Database'</span>, <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+        <span style="color: #ffff00;">'hostname'</span> =&gt; <span style="color: #ffff00;">'example.com'</span>,
+    ));
+});
+</pre>
+
+<p>实例化时传递的参数优先级高于配置参数值，而配置参数值的优先级又高于类构造器默认的参数值。</p>
+
+<hr />
+
+
+
+<h2><a name="sec8" id="sec8"></a>
+
+获取服务</h2>
+
+<p class="first">要从容器中取回服务对象，调用<code>$di-&gt;get()</code>方法即可。</p>
+
+&lt;src &gt;
+&lt;?php
+$db = $di-&gt;get('database');
+&lt;/src&gt;
+
+<hr />
+
+
+<h2><a name="sec9" id="sec9"></a>
+继承构造器参数</h2>
+
+<p class="first">在下面的示例中，我们将会增加一个抽象类<code>Model</code>以及两个具体类<code>BlogModel</code>和<code>WikiModel</code>。主要想法是：所有的<code>Model</code>类要操作数据库表都需要一个<code>Database</code>连接类。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">namespace</span> <span style="color: #ff0000; font-weight: bold;">example</span>\<span style="color: #ff0000; font-weight: bold;">package</span>;
+
+<span style="color: #00ffff;">abstract</span> <span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">Model</span>
+{
+    <span style="color: #00ffff;">protected</span> $<span style="color: #ffffff; font-weight: bold;">db</span>;
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">__construct</span>(<span style="color: #ff7f50;">Database</span> $<span style="color: #ffffff; font-weight: bold;">db</span>)
+    {
+        $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">db</span> = $<span style="color: #ffffff; font-weight: bold;">db</span>;
+    }
+}
+
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">BlogModel</span> <span style="color: #00ffff;">extends</span> <span style="color: #ff7f50;">Model</span>
+{
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">...
+</span>}
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">WikiModel</span> <span style="color: #00ffff;">extends</span> <span style="color: #ff7f50;">Model</span>
+
+{
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">...
+</span>}
+</pre>
+
+<p>我们将会为<code>BlogModel</code>和<code>WikiModel</code>创建服务，并把数据库服务注入到以上两上<code>Model</code>中作为服务定义一部分。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">default config for the Database class
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">params</span>[<span style="color: #ffff00;">'example\package\Database'</span>] = <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ffff00;">'hostname'</span> =&gt; <span style="color: #ffff00;">'localhost'</span>,
+    <span style="color: #ffff00;">'username'</span> =&gt; <span style="color: #ffff00;">'user'</span>,
+    <span style="color: #ffff00;">'password'</span> =&gt; <span style="color: #ffff00;">'passwd'</span>,
+);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">a database service
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'database'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">di</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\Database'</span>);
+});
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">a blog-model service
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'blog_model'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">di</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\BlogModel'</span>, <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+        <span style="color: #ffff00;">'db'</span> =&gt; $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">get</span>(<span style="color: #ffff00;">'database'</span>),
+    ));
+});
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">a wiki-model service
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'wiki_model'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">di</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\WikiModel'</span>, <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+        <span style="color: #ffff00;">'db'</span> =&gt; $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">get</span>(<span style="color: #ffff00;">'database'</span>),
+    ));
+});
+</pre>
+
+<p>但是这里如果使用DI容器提供的配置可继承性，我们可以通过类配置来定义数据库服务注入。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">default params for the Database class
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">params</span>[<span style="color: #ffff00;">'example\package\Database'</span>] = <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ffff00;">'hostname'</span> =&gt; <span style="color: #ffff00;">'localhost'</span>,
+    <span style="color: #ffff00;">'username'</span> =&gt; <span style="color: #ffff00;">'user'</span>,
+    <span style="color: #ffff00;">'password'</span> =&gt; <span style="color: #ffff00;">'passwd'</span>,
+);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">default params for the Model class
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #ffffff; font-weight: bold;">params</span>[<span style="color: #ffff00;">'example\package\Model'</span>] = <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ffff00;">'db'</span> =&gt; $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">lazyGet</span>(<span style="color: #ffff00;">'database'</span>),
+);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">define the database service
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'database'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">di</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\Database'</span>);
+});
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">define the blog_model service
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'blog_model'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">di</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\BlogModel'</span>);
+});
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">define the wiki_model service
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'wiki_model'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">di</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\WikiModel'</span>);
+});
+
+</pre>
+
+<p>我们不再需要在实例化的时候设置<code>'db'</code>的值。取而代之的是，子类<code>BlogModel</code>和<code>WikiModel</code>从父类Model中继承该参数。因此，所有<code>Model</code>子类都能通过构造器参数<code>db</code>获得<code>database</code>服务。（当然，如果有需要可以在实例化的时候覆盖<code>'db'</code>的值。）</p>
+
+<p>注意，这里我们使用了<code>lazyGet()</code>方法。这是一个特殊方法，一般与构造器参数和setter方法一起使用。如果我们调用<code>$di-&gt;get()</code>方法，容器将会在那会儿实例化服务。但是，如果使用<code>$di-&gt;lazyGet()</code>方法，当且仅当配置好的对象被成功实例化后，服务才会被实例化。想像它是某服务的延迟加载封装器，而该服务又是延迟加载的。</p>
+
+<p>理所当然应该有一个<code>lazyNew()</code>方法，此方法是用于实例化对象，而不是获取服务。<code>lazyNew()</code>之于<code>newInstance()</code>就好比<code>lazyGet()</code>之于<code>get()</code>。使用<code>lazyNew()</code>方法，当配置好的类被创建后，才开始创建对象。</p>
+
+<p>我们无需自己写类去获得配置系统的优点。任何具有构造器参数的类都会被配置系统识别，我们要做的仅仅是使用<code>$di-&gt;newInstance()</code>方法实例化类。</p>
+
+<hr />
+
+
+<h2><a name="sec10" id="sec10"></a>
+工厂和依赖实践</h2>
+
+<p class="first">上面的应用只是为每个模型对象创建服务，这可能有点乏味。我们可能需要创建其他模型，并且我们不想分开创建他们。另外，我们可能要在另一个对象中创建模型对象，这也是工厂类的用武之地。</p>
+
+<p>下面，我们将定义3个新类：为我们创建模型对象的工厂，使用模型工厂的抽像类<code>PageController</code>和需要博客模型的<code>BlogController</code>类。他们的定义如下：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">namespace</span> <span style="color: #ff0000; font-weight: bold;">example</span>\<span style="color: #ff0000; font-weight: bold;">package</span>;
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">di</span>\<span style="color: #ff0000; font-weight: bold;">Forge</span>;
+
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">ModelFactory</span>
+{
+    <span style="color: #00ffff;">protected</span> $<span style="color: #ffffff; font-weight: bold;">forge</span>;
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">__construct</span>(<span style="color: #ff7f50;">Forge</span> $<span style="color: #ffffff; font-weight: bold;">forge</span>)
+    {
+        $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">forge</span> = $<span style="color: #ffffff; font-weight: bold;">forge</span>;
+    }
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">newInstance</span>($<span style="color: #ffffff; font-weight: bold;">model_name</span>)
+    {
+        $<span style="color: #ffffff; font-weight: bold;">class</span> = <span style="color: #ffff00;">'example\package\Model'</span> . <span style="color: #c0c0c0; background-color: #000000;">ucfirst(</span>$<span style="color: #ffffff; font-weight: bold;">model_name</span>);
+        <span style="color: #00ffff;">return</span> $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">forge</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>($<span style="color: #ffffff; font-weight: bold;">class</span>);
+    }
+}
+
+
+<span style="color: #00ffff;">abstract</span> <span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">PageController</span>
+{
+    <span style="color: #00ffff;">protected</span> $<span style="color: #ffffff; font-weight: bold;">model_factory</span>;
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">__construct</span>(<span style="color: #ff7f50;">ModelFactory</span> $<span style="color: #ffffff; font-weight: bold;">model_factory</span>)
+    {
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">model_factory</span> = $<span style="color: #ffffff; font-weight: bold;">model_factory</span>;
+    }
+}
+
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">BlogController</span> <span style="color: #00ffff;">extends</span> <span style="color: #ff7f50;">PageController</span>
+{
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">exec</span>()
+    {
+        $<span style="color: #ffffff; font-weight: bold;">blog_model</span> = $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">model_factory</span>(<span style="color: #ffff00;">'blog'</span>);
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">... get data from the blog model and return it ...
+
+</span>    }
+}
+</pre>
+
+<p>现在，我们可以像这样建立DI容器：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">default params for database connections
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">params</span>[<span style="color: #ffff00;">'example\package\Database'</span>] = <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+    <span style="color: #ffff00;">'hostname'</span> =&gt; <span style="color: #ffff00;">'localhost'</span>,
+    <span style="color: #ffff00;">'username'</span> =&gt; <span style="color: #ffff00;">'user'</span>,
+    <span style="color: #ffff00;">'password'</span> =&gt; <span style="color: #ffff00;">'passwd'</span>,
+);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">default params for model objects
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #ffffff; font-weight: bold;">params</span>[<span style="color: #ffff00;">'example\package\Model'</span>] = <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ffff00;">'db'</span> =&gt; $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">lazyGet</span>(<span style="color: #ffff00;">'database'</span>),
+);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">default params for the model factory
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #ffffff; font-weight: bold;">params</span>[<span style="color: #ffff00;">'example\package\ModelFactory'</span>] = <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ffff00;">'forge'</span> =&gt; $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getForge</span>(),
+);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">default params for page controllers
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #ffffff; font-weight: bold;">params</span>[<span style="color: #ffff00;">'example\package\PageController'</span>] = <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ffff00;">'model_factory'</span> =&gt; $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">lazyGet</span>(<span style="color: #ffff00;">'model_factory'</span>),
+);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">the database service
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'database'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">di</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\Database'</span>);
+});
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">the model factory service
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'model_factory'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">di</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\ModelFactory'</span>);
+});
+
+</pre>
+
+<p>当我们实例化<code>BlogController</code>类并运行它时。。。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">blog_controller</span> = $<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'aura\example\BlogController'</span>);
+
+<span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">blog_controller</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">exec</span>();
+</pre>
+
+<p>。。。发生了一系列的事件，共分两步完成所有的依赖注入。第一步是实例化<code>BlogController</code></p>
+
+<ul>
+<li>实例从<code>PageController</code>继承构造器参数</li>
+
+<li>参数获取<code>'model_factory'</code>服务</li>
+<li><code>ModelFactory</code>参数获取DI容器的<code>Forge</code>对象</li>
+</ul>
+
+<p>第二步是在<code>BlogController::exec()</code>方法中调用<code>ModelFactory::newInstance()</code></p>
+
+<ul>
+<li><code>BlogController::exec()</code>调用<code>ModelFactory::newInstance()</code></li>
+<li><code>ModelFactory::newInstance()</code>请求<code>Forge</code>对象创建一个新的<code>BlogModel</code>（别忘了，<code>Forge</code>是可以获得构造器参数的。）</li>
+<li><code>BlogModel</code>从<code>Model</code>继承参数</li>
+
+<li><code>Model</code>能数获取<code>'database'</code>服务</li>
+</ul>
+
+<p>最后，<code>BlogController::exec()</code>方法获得了完全配置好的<code>BlogModel</code>对象，在该方法中不需要再做任何配置工作。</p>
+
+<hr />
+
+
+<h2><a name="sec11" id="sec11"></a>
+setter注入</h2>
+
+<p class="first">上面我们一直在介绍构造器注入。然而，我们同样可以进行setter注入。</p>
+
+<p>请看下面这个示例。。。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">namespace</span> <span style="color: #ff0000; font-weight: bold;">example</span>\<span style="color: #ff0000; font-weight: bold;">package</span>;
+
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">Foo</span> {
+
+    <span style="color: #00ffff;">protected</span> $<span style="color: #ffffff; font-weight: bold;">db</span>;
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">setDb</span>(<span style="color: #ff7f50;">Database</span> $<span style="color: #ffffff; font-weight: bold;">db</span>)
+    {
+        $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">db</span> = $<span style="color: #ffffff; font-weight: bold;">db</span>;
+    }
+}
+
+</pre>
+
+<p>。。。一般来说，类属性的值应使用sertter方法设置，但是我们也可以用下面的注入方法设置他们：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">after construction, the Forge will call Foo::setDb()
+</span><span style="color: #ff0000;">// </span><span style="color: #ff0000;">and inject the 'database' service object
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">setter</span>[<span style="color: #ffff00;">'example\package\Foo'</span>][<span style="color: #ffff00;">'setDb'</span>] = $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">lazyGet</span>(<span style="color: #ffff00;">'database'</span>);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">create a foo_service; on get('foo_service'), the Forge will create the
+</span><span style="color: #ff0000;">// </span><span style="color: #ff0000;">Foo object, then call setDb() on it per the setter specification above.
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'foo_service'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">di</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\Foo'</span>);
+});
+
+</pre>
+
+<p>注意到我们在注入方法中使用了<code>lazyGet()</code>。和构造器参数一样，我们可以通过<code>lazyNew()</code>方法创建一个新的<code>Database</code>对象，而不是共享使用<code>Manager</code>中存在的那个：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">after construction, call Foo::setDb() and inject a service object.
+
+</span><span style="color: #ff0000;">// </span><span style="color: #ff0000;">we override the default 'hostname' param for the instantiation.
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">setter</span>[<span style="color: #ffff00;">'example\package\Foo'</span>][<span style="color: #ffff00;">'setDb'</span>] = $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">lazyNew</span>(<span style="color: #ffff00;">'example\package\Database'</span>, <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+    <span style="color: #ffff00;">'hostname'</span> =&gt; <span style="color: #ffff00;">'example.com'</span>,
+));
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">create a foo_service; on get('foo_service'), the Forge will create the
+</span><span style="color: #ff0000;">// </span><span style="color: #ff0000;">Foo object, then call setDb() on it per the setter specification above.
+</span>$<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'foo_service'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">di</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\Foo'</span>);
+});
+
+</pre>
+
+<p>setter的配置也是可继承的。如果你有一个<code>example\package\Foo</code>类，如。。。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">namespace</span> <span style="color: #ff0000; font-weight: bold;">example</span>\<span style="color: #ff0000; font-weight: bold;">package</span>;
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">Bar</span> <span style="color: #00ffff;">extends</span> <span style="color: #ff7f50;">Foo</span>
+
+{
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">...
+</span>}
+</pre>
+
+<p>。。。你不需要为子类重新添加一个setter；<code>Forge</code>对象会查找它父类的所有setter，并应用它们。（如果你确要为子类添加一个setter，那会覆盖父类的setter。）</p>
+
+<hr />
+
+
+<h2><a name="sec12" id="sec12"></a>
+子容器</h2>
+
+<p><code>Manager</code>本身是一个依赖注入容器，但是你可能希望创建<code>Manager</code>的子容器来处理服务。当你想要一个对象集合，对象之间互相引用，就好像是注册表或服务定位器的一部分，但是你又想保持依赖注入的优势，这就非常有用了。</p>
+
+<p>添加子容器很简单，两行代码就能搞定：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">create a new Container
+</span>$<span style="color: #ffffff; font-weight: bold;">sub</span> = $<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">newContainer</span>(<span style="color: #ffff00;">'sub_name'</span>);
+
+</pre>
+
+<p>因为子容器是独立于<code>Manager</code>的，所以你也需要为它单独配置<code>$params</code>和<code>$setters</code>。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">get a previously-created Container
+</span>$<span style="color: #ffffff; font-weight: bold;">sub</span> = $<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">getContainer</span>(<span style="color: #ffff00;">'sub_name'</span>);
+
+</pre>
+
+<p>你可以使用以下方法操作子容器（其实和<code>Container</code>一样）：</p>
+
+<ul>
+<li>has()</li>
+<li>set()</li>
+<li>get()</li>
+<li>lazyGet()</li>
+<li>newInstance()</li>
+
+<li>lazyNew()</li>
+</ul>
+
+<p>这些方法和<code>Manager</code>的一模一样，只是服务将会在子容器中创建而不是<code>Manager</code>。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">create the sub-container
+</span>$<span style="color: #ffffff; font-weight: bold;">sub</span> = $<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">newContainer</span>(<span style="color: #ffff00;">'sub_name'</span>);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">configure params for objects in the sub-container
+</span>$<span style="color: #ffffff; font-weight: bold;">sub</span>-&gt;<span style="color: #ffffff; font-weight: bold;">params</span>[<span style="color: #ffff00;">'example\pacakage\Database'</span>][<span style="color: #ffff00;">'host'</span>] = <span style="color: #ffff00;">'alt-db.example.com'</span>;
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">add an alternative Database connection to the sub-container
+</span>$<span style="color: #ffffff; font-weight: bold;">sub</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'alt_db'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">sub</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">sub</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\Database'</span>);
+});
+
+</pre>
+
+<p>如果你想在子容器中添加更多的服务，或修改子容器的配置参数和setter，你可以先从<code>Manager</code>中取回子容器，再做相应的处理：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">get the sub-container
+</span>$<span style="color: #ffffff; font-weight: bold;">sub</span> = $<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">get</span>(<span style="color: #ffff00;">'sub_name'</span>);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">add another service to it
+</span>$<span style="color: #ffffff; font-weight: bold;">sub</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'other'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">sub</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">sub</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'example\package\Other'</span>);
+});
+
+</pre>
+
+<p>最后，你还可以克隆子容器。这会创建子容器的一个拷贝，包括它的配置和服务定义，但会清除子容器中存储的服务对象。拷贝子容器中的服务对象将会在调用时被创建。这就允许你创建多个DI容器，就像独立注册表或服务定位器一样。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">clone 1 will have a set of service definitions and object instances...
+</span><span style="color: #ff0000;">// </span><span style="color: #ff0000;">definitions ...
+</span>$<span style="color: #ffffff; font-weight: bold;">clone1</span> = $<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">cloneContainer</span>(<span style="color: #ffff00;">'sub_name'</span>);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">... and clone 2 will have the same service definitions, but the object
+</span><span style="color: #ff0000;">// </span><span style="color: #ff0000;">instances will be different and independent from the ones in clone 1
+</span>$<span style="color: #ffffff; font-weight: bold;">clone2</span> = $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">cloneContainer</span>(<span style="color: #ffff00;">'sub_name'</span>);
+</pre>
+
+<p>如果你想把克隆子容器作为参数传递给另一个对象，可以使用<code>lazyCloneContainer()</code>方法。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">di</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">params</span>[<span style="color: #ffff00;">'example\package\NeedsContainer'</span>][<span style="color: #ffff00;">'container'</span>] = $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">lazyCloneContainer</span>(<span style="color: #ffff00;">'sub_name'</span>);
+
+</pre>
+
+<hr />
+
+
+<h2><a name="sec13" id="sec13"></a>
+总结</h2>
+
+<p class="first">如果我们使用参数、setter、服务和工厂正确地构建依赖注入，我们只需要直接从DI容器中获取一个对象。所有对象都会在DI容器中由工厂对象和/或<code>Forge</code>对象创建。我们永远都不会在任何创建的对象中直接使用DI容器本身。</p>
+
+
+<!-- Page published by Emacs Muse ends here -->
+<a href="#top">返回顶部 ↑</a>
+
+    </div>
+  </div>
+  <div id="footer">
+    <p>
+      Copyright &copy; 2010 - 2011,
+      <a href="http://roygu.com">Roy Gu</a> Organized by <a href="http://bullsoft.org">Bull Soft</a><br />
+      网站风格及LOGO版权归<a href="http://paul-m-jones.com/">Paul M. Jones</a>及其他<a href="http://www.auraphp.org">Aura Php</a>贡献者所有
+    </p>
+  </div>
+</div>
+
+</body>
+</html>

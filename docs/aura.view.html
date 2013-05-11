@@ -1,0 +1,490 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title> </title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/reset.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/text.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/960.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/aura.css" />
+
+  <script src="../js/jquery-1.6.1.min.js"></script>
+  <script>
+    $(document).ready(function()
+    {
+      $('#logo').hide();
+      $('#logo').delay(300).fadeIn(2000);
+    });
+  </script>
+</head>
+
+<body>
+<div id="top">
+  <div id="menu">
+    <a href="/">Home</a><a href="docs/">Documentation</a>
+  </div>
+  <div id="banner">
+    <a href="http://www.auraphp.org/" id="logo"></a>
+  </div>
+  <div id="content">
+    <div class="container_12">
+
+<h1 id="title">aura.view</h1>
+<!-- Page published by Emacs Muse begins here -->
+
+<div class="page-nav">
+    <span class="page-prev"><a href="aura.router.html">上一页</a></span>
+    <span class="page-next"><a href="aura.web.html">下一页</a></span>
+</div>
+<hr />
+
+<div class="contents">
+
+<dl>
+<dt>
+<a href="#sec1">简介</a>
+</dt>
+<dt>
+<a href="#sec2">基本使用</a>
+</dt>
+<dd>
+<dl>
+<dt>
+<a href="#sec3">实例化</a>
+</dt>
+<dt>
+<a href="#sec4">分配数据</a>
+
+</dt>
+<dt>
+<a href="#sec5">编写模板脚本</a>
+</dt>
+<dt>
+<a href="#sec6">使用视图辅助</a>
+</dt>
+</dl>
+</dd>
+<dt>
+<a href="#sec7">高级用法</a>
+</dt>
+<dd>
+<dl>
+
+<dt>
+<a href="#sec8">模板查找</a>
+</dt>
+<dt>
+<a href="#sec9">模板组成</a>
+</dt>
+<dt>
+<a href="#sec10">模板碎片</a>
+</dt>
+<dt>
+<a href="#sec11">写视图辅助</a>
+</dt>
+</dl>
+
+</dd>
+</dl>
+</div>
+
+
+<hr />
+
+<h2><a name="sec1" id="sec1"></a>
+简介</h2>
+
+<p class="first">Aura View包是对<a href="http://martinfowler.com/eaaCatalog/templateView.html">TemplateView</a>样式的实现，支持视图辅助和路径栈。它的遵从“使用PHP做显示逻辑”的理念，并且它优于<a href="http://phpsavant.com/">Savant</a>、<a href="http://framework.zend.com/manual/en/zend.view.html">Zend_View</a>和<a href="http://solarphp.com/class/Solar_View">Solar_View</a>。</p>
+
+<p>此包依赖于<a href="https://github.com/auraphp/aura.di">Aura DI</a>包。</p>
+
+
+<h2><a name="sec2" id="sec2"></a>
+基本使用</h2>
+
+<h3><a name="sec3" id="sec3"></a>
+实例化</h3>
+
+<p class="first">实例化<code>Template</code>（所有相关的视图辅助都可用）最简单的方法是包含<a href="https://github.com/auraphp/aura.di">Aura DI</a>包源码，然后调用<code>instance.php</code>脚本。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">business logic
+</span><span style="color: #00ffff;">require_once</span> <span style="color: #ffff00;">'/path/to/aura.di/src.php'</span>;
+$<span style="color: #ffffff; font-weight: bold;">template</span> = <span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'/path/to/aura.view/scripts/instance.php'</span>;
+
+</pre>
+
+<p>然后调用<code>Template</code>对象的<code>fetch()</code>方法去获取模板脚本的输出。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">business logic
+</span><span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">template</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">fetch</span>(<span style="color: #ffff00;">'/path/to/tpl.php'</span>);
+
+</pre>
+
+<p>当然，我们也可以把<code>aura.di/src</code>和<code>aura.view/src</code>目录添加到自动装载器中，然后手动实例化：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">di</span>\<span style="color: #ff0000; font-weight: bold;">Container</span>;
+
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">di</span>\<span style="color: #ff0000; font-weight: bold;">Forge</span>;
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">di</span>\<span style="color: #ff0000; font-weight: bold;">Config</span>;
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">view</span>\<span style="color: #ff0000; font-weight: bold;">Template</span>;
+
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">view</span>\<span style="color: #ff0000; font-weight: bold;">Finder</span>;
+$<span style="color: #ffffff; font-weight: bold;">template</span> = <span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Template</span>(
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">a helper container
+
+</span>    <span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Container</span>(<span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Forge</span>(<span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Config</span>)),
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">a template finder
+</span>    <span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Finder</span>
+
+);
+</pre>
+
+<p>（注意，如果我们手动实例化视图对象，就不得不配置<code>Container</code>以添加视图辅助服务。更多信息请在本页末尾查看“视图辅助”部分。）</p>
+
+
+<h3><a name="sec4" id="sec4"></a>
+分配数据</h3>
+
+<p class="first">我们可以通过设置<code>Template</code>对象属性的方式把变量分配给模板脚本，如：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">business logic
+</span>$<span style="color: #ffffff; font-weight: bold;">template</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">var</span> = <span style="color: #ffff00;">'World'</span>;
+</pre>
+
+<p>然后我们可以在模板脚本中通过<code>$this</code>引用它们。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">template script
+</span>$<span style="color: #ffffff; font-weight: bold;">e</span> = $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">getHelper</span>(<span style="color: #ffff00;">'escape'</span>);
+<span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">e</span>($<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">var</span>);
+
+</pre>
+
+<p>我们也可以一次添加多个数据属性，使用<code>addData()</code>方法把现有数据和新数据合并。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">business logic
+</span>$<span style="color: #ffffff; font-weight: bold;">template</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">addData</span>(<span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+    <span style="color: #ffff00;">'foo'</span> =&gt; <span style="color: #ffff00;">'Value of foo'</span>,
+    <span style="color: #ffff00;">'bar'</span> =&gt; <span style="color: #ffff00;">'Value of bar'</span>,
+));
+</pre>
+
+<p>（注意，数组键名将会被映射到对象的属性，所以请确保它们是合法的属性名。）</p>
+
+<p>最后，我们可以使用<code>setData()</code>方法替换所有<code>Template</code>中的变量值。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">business logic
+</span><span style="color: #ff0000;">// </span><span style="color: #ff0000;">this will remove $var, $foo, and $bar from the template
+</span>$<span style="color: #ffffff; font-weight: bold;">template</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">setData</span>(<span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+    <span style="color: #ffff00;">'baz'</span> =&gt; <span style="color: #ffff00;">'Value of baz'</span>,
+    <span style="color: #ffff00;">'dib'</span> =&gt; <span style="color: #ffff00;">'Value of dib'</span>,
+));
+</pre>
+
+
+<h3><a name="sec5" id="sec5"></a>
+
+编写模板脚本</h3>
+
+<p class="first">Aura View使用普通的PHP书写模板脚本，不需要一门新的标记语言。模板脚本在<code>Template</code>对象的作用域中执行，所以可以使用<code>$this</code>引用<code>Template</code>对象。下面给出一个示例：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span> $<span style="color: #ffffff; font-weight: bold;">e</span> = $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">getHelper</span>(<span style="color: #ffff00;">'escape'</span>); <span style="color: #ffaa00;">?&gt;</span>
+
+<span style="color: #00ff00;">&lt;html&gt;</span>
+<span style="color: #00ff00;">&lt;head&gt;</span>
+    <span style="color: #00ff00;">&lt;title&gt;</span><span style="color: #ffaa00;">&lt;?php</span> <span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">e</span>($<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">title</span>) <span style="color: #ffaa00;">?&gt;</span><span style="color: #00ff00;">&lt;/title&gt;</span>
+
+<span style="color: #00ff00;">&lt;/head&gt;</span>
+<span style="color: #00ff00;">&lt;body&gt;</span>
+    <span style="color: #00ff00;">&lt;p&gt;</span><span style="color: #ffaa00;">&lt;?php</span>
+        <span style="color: #00ffff;">echo</span> <span style="color: #ffff00;">"Hello "</span> . $<span style="color: #ffffff; font-weight: bold;">e</span>($<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">var</span>) . <span style="color: #ffff00;">'!'</span>;
+    <span style="color: #ffaa00;">?&gt;</span><span style="color: #00ff00;">&lt;/p&gt;</span>
+
+<span style="color: #00ff00;">&lt;/body&gt;</span>
+<span style="color: #00ff00;">&lt;/html&gt;</span>
+</pre>
+
+<p>我们可以在模板中正常使用任何PHP代码。（这里要求作者严格磨练自己，在模板脚本中只处理显示逻辑。）我们也希望使用另一种语法来书写PHP条件语句和循环语句：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span> <span style="color: #00ffff;">if</span> ($<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">message</span>): <span style="color: #ffaa00;">?&gt;</span>
+
+    <span style="color: #00ff00;">&lt;p&gt;</span><span style="color: #ff0000; font-weight: bold;">The</span> <span style="color: #ff0000; font-weight: bold;">message</span> <span style="color: #ff0000; font-weight: bold;">is</span> <span style="color: #ffaa00;">&lt;?php</span> <span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">e</span>($<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">message</span>); <span style="color: #ffaa00;">?&gt;</span><span style="color: #00ff00;">&lt;/p&gt;</span>
+
+<span style="color: #ffaa00;">&lt;?php</span> <span style="color: #00ffff;">endif</span>; <span style="color: #ffaa00;">?&gt;</span>
+
+<span style="color: #00ff00;">&lt;ul&gt;</span>
+<span style="color: #ffaa00;">&lt;?php</span> <span style="color: #00ffff;">foreach</span> ($<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">list</span> <span style="color: #00ffff;">as</span> $<span style="color: #ffffff; font-weight: bold;">item</span>): <span style="color: #ffaa00;">?&gt;</span>
+
+    <span style="color: #00ff00;">&lt;li&gt;</span><span style="color: #ffaa00;">&lt;?php</span> <span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">e</span>($<span style="color: #ffffff; font-weight: bold;">item</span>); <span style="color: #ffaa00;">?&gt;</span><span style="color: #00ff00;">&lt;/li&gt;</span>
+<span style="color: #ffaa00;">&lt;?php</span> <span style="color: #00ffff;">endforeach</span>; <span style="color: #ffaa00;">?&gt;</span>
+
+<span style="color: #00ff00;">&lt;/ul&gt;</span>
+</pre>
+
+
+<h3><a name="sec6" id="sec6"></a>
+使用视图辅助</h3>
+
+<p class="first">Aura View有很多<code>Helper</code>类，用于封装常用的显示逻辑。这些辅助类通过辅助容器<code>Container</code>映射到<code>Template</code>对象上。调用辅助有两种方法：</p>
+
+<ul>
+<li>作为<code>Template</code>对象的一个方法</li>
+<li>通过<code>getHelper()</code>方法获取辅助对象本身</li>
+</ul>
+
+<p><code>$this-&gt;escape()</code>是最重要的辅助方法。每次echo或print分配变量时都需要使用它。（其他辅助方法会自动调用<code>escape</code>方法。）你可以这样调用它：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">template script
+</span><span style="color: #00ffff;">echo</span> $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">escape</span>($<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">var</span>);
+
+</pre>
+
+<p>或这样调用：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">template script
+</span>$<span style="color: #ffffff; font-weight: bold;">e</span> = $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">getHelper</span>(<span style="color: #ffff00;">'escape'</span>);
+
+<span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">e</span>($<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">var</span>);
+</pre>
+
+<p>Aura View的其他视图辅助如下：</p>
+
+<ul>
+<li><code>$this-&gt;anchor($href, $text)</code>返回一个<code>&lt;a href=&quot;$href&quot;&gt;$text&lt;/a&gt;</code>标签</li>
+
+<li><code>$this-&gt;attribs($list)</code>从键值对数组<code>$list</code>返回一个以空格分隔的属性列表</li>
+<li><code>$this-&gt;base($href)</code>返回一个<code>&lt;base href=&quot;$href&quot; /&gt;</code>标签</li>
+<li><code>$this-&gt;datetime($datastr, $format)</code>返回格式化的时间字符串</li>
+
+<li><code>$this-&gt;image($src)</code>返回一个<code>&lt;img src=&quot;$src&quot; /&gt;</code>标签</li>
+<li><code>$this-&gt;metas()</code>返回一个对象，提供添加和取回<code>&lt;meta ... /&gt;</code>标签的方法。
+
+<ul>
+<li><code>$this-&gt;metas()-&gt;addHttp($http_equiv, $content)</code>添加一个<code>&lt;meta http-equiv=&quot;$http_equiv&quot; content=&quot;$content&quot; /&gt;</code>标签。</li>
+
+<li><code>$this-&gt;metas()-&gt;addName($name, $content)</code>添加一个<code>&lt;meta name=&quot;$name&quot; content=&quot;$content&quot; /&gt;</code>标签。</li>
+<li><code>$this-&gt;metas()-&gt;get()</code>从视图辅助返回所有添加的<code>meta</code>标签。</li>
+
+</ul></li>
+<li><code>$this-&gt;scripts()</code>返回一个对象，提供添加和取回<code>&lt;script ...&gt;&lt;/script&gt;</code>标签的方法。
+
+<ul>
+<li><code>$this-&gt;scripts()-&gt;add($src)</code>添加一个<code>script</code>标签。</li>
+<li><code>$this-&gt;scripts()-&gt;get()</code>从视图辅助返回所有添加的<code>script</code>标签。</li>
+
+</ul></li>
+<li><code>$this-&gt;styles()</code>返回一个对象，提供添加和取回<code>&lt;link rel=&quot;stylesheet&quot; ... /&gt;</code>标签的方法。
+
+<ul>
+<li><code>$this-&gt;styles()-&gt;add($href)</code>添加<code>style</code>标签。</li>
+
+<li><code>$this-&gt;styles()-&gt;get()</code>从视图辅助返回所有添加的<code>link</code>标签。</li>
+</ul></li>
+<li><code>$this-&gt;title</code>返回一个对象操作<code>&lt;title&gt;...&lt;/title&gt;</code>标签。
+
+<ul>
+<li><code>$this-&gt;title()-&gt;set($title)</code>设置<code>title</code>值。</li>
+
+<li><code>$this-&gt;title()-&gt;append($suffix)</code>在<code>title</code>末尾追加。</li>
+<li><code>$this-&gt;title()-&gt;prepend($prefix)</code>在&lt;ocde&gt;title&lt;/code&gt;前面追加。</li>
+<li><code>$this-&gt;title()-&gt;get()</code>返回经过适当转换后的<code>title</code>标签。</li>
+
+<li><code>$this-&gt;title()-&gt;getRaw()</code>返回未经转换后的<code>title</code>标签。</li>
+</ul></li>
+</ul>
+
+
+
+<h2><a name="sec7" id="sec7"></a>
+高级用法</h2>
+
+<h3><a name="sec8" id="sec8"></a>
+
+模板查找</h3>
+
+<p class="first">尽管我们可以使用<code>fetch()</code>方法获取一个绝对路径的模板脚本，但指定模板的一个或多个路径会更强大。然后我们同样可以使用<code>fetch()</code>方法获取该模板，<code>Finder</code>会在指定的路径中查找该模板。这允许我们指定的基准模板，并根据需要重写。</p>
+
+<p>要使用<code>Finder</code>查找模板，我们要先告诉<code>Finder</code>到哪去找模板脚本：首先从<code>Template</code>对象中获取<code>Finder</code>对象，然后调用<code>setPaths()</code>方法。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">business logic
+</span>$<span style="color: #ffffff; font-weight: bold;">finder</span> = $<span style="color: #ffffff; font-weight: bold;">template</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">getFinder</span>();
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">set the paths where templates can be found
+</span>$<span style="color: #ffffff; font-weight: bold;">finder</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">setPaths</span>(<span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+    <span style="color: #ffff00;">'/path/to/templates/foo'</span>,
+    <span style="color: #ffff00;">'/path/to/templates/bar'</span>,
+    <span style="color: #ffff00;">'/path/to/templates/baz'</span>,
+));
+</pre>
+
+<p>现在，当你调用<code>fetch()</code>方法时，<code>Template</code>对象将会使用<code>Finder</code>在那些目录中查找我们指定的模板脚本。</p>
+
+<p>例如，如果我们<code>echo $template-&gt;fetch('tpl')</code>，<code>Finder</code>将会按序在每个目录中查找'tpl.php'模板脚本。这充许我们建立多个模板路径，并可以在基准模板之前的某个路径中放置替换模板。</p>
+
+
+<h3><a name="sec9" id="sec9"></a>
+模板组成</h3>
+
+<p class="first">我们通常需要把一个模板分离成多块碎片。这充许我们保持不同内容碎片的逻辑独立性。例如，一个页面可以分为头部，导航，侧边栏等。</p>
+
+<p>我们可以在一个模板脚本中使用<code>$this-&gt;find()</code>方法查找别一个模板，然后在需要的时候包含它<code>include</code>即可。例如：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">template script
+</span>    $<span style="color: #ffffff; font-weight: bold;">e</span> = $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">getHelper</span>(<span style="color: #ffff00;">'escape'</span>);
+
+<span style="color: #ffaa00;">?&gt;</span>
+<span style="color: #00ff00;">&lt;html&gt;</span>
+<span style="color: #00ff00;">&lt;head&gt;</span>
+    <span style="color: #ffaa00;">&lt;?php</span> <span style="color: #00ffff;">include</span> $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">find</span>(<span style="color: #ffff00;">'head'</span>); <span style="color: #ffaa00;">?&gt;</span>
+
+<span style="color: #00ff00;">&lt;/head&gt;</span>
+<span style="color: #00ff00;">&lt;body&gt;</span>
+    <span style="color: #ffaa00;">&lt;?php</span> <span style="color: #00ffff;">include</span> $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">find</span>(<span style="color: #ffff00;">'branding'</span>); <span style="color: #ffaa00;">?&gt;</span>
+
+    <span style="color: #ffaa00;">&lt;?php</span> <span style="color: #00ffff;">include</span> $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">find</span>(<span style="color: #ffff00;">'navigation'</span>); <span style="color: #ffaa00;">?&gt;</span>
+    <span style="color: #00ff00;">&lt;p&gt;</span><span style="color: #ff0000; font-weight: bold;">Hello</span>, <span style="color: #ffaa00;">&lt;?php</span> <span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">e</span>($<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">var</span>); <span style="color: #ffaa00;">?&gt;</span>!<span style="color: #00ff00;">&lt;/p&gt;</span>
+
+    <span style="color: #ffaa00;">&lt;?php</span> <span style="color: #00ffff;">include</span> $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">find</span>(<span style="color: #ffff00;">'footer'</span>); <span style="color: #ffaa00;">?&gt;</span>
+<span style="color: #00ff00;">&lt;/body&gt;</span>
+<span style="color: #00ff00;">&lt;/html&gt;</span>
+
+</pre>
+
+<p>以这种方式包含<code>include</code>进来的模板将会和当前模板共享同一个作用域。</p>
+
+
+<h3><a name="sec10" id="sec10"></a>
+模板碎片</h3>
+
+<p class="first">模板碎片是作用域独立的模板分离方式。我们可以在一个模板脚本中使用<code>fetch()</code>方法获取另一个模板；但它们不共享同一个作用域（尽管<code>$this</code>仍可用）。另外，我们还可以向碎片模板传入数组参数（在碎片模板中会自动解析<code>extract</code>出变量。）</p>
+
+<p>例如，如下碎片模板。。。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">partial template named '_partial.php'.
+</span><span style="color: #ff0000;">// </span><span style="color: #ff0000;">note that we use $name, not $this-&gt;</span><span style="color: #ffffff; font-weight: bold;">name</span><span style="color: #ff0000;">.
+</span>$<span style="color: #ffffff; font-weight: bold;">e</span> = $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getHelper</span>(<span style="color: #ffff00;">'escape'</span>);
+
+<span style="color: #00ffff;">echo</span> <span style="color: #ffff00;">"    &lt;li&gt;"</span> . $<span style="color: #ffffff; font-weight: bold;">e</span>($<span style="color: #ffffff; font-weight: bold;">name</span>) . <span style="color: #ffff00;">"&lt;/li&gt;"</span> . <span style="color: #00ff00;">PHP_EOL</span>;
+
+</pre>
+
+<p>。。。我们可以在另一个模板中获取<code>fetch()</code>它：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">main template. assume $this-&gt;</span><span style="color: #ffffff; font-weight: bold;">list</span><span style="color: #ff0000;"> is an array of names.
+</span><span style="color: #00ffff;">foreach</span> ($<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">list</span> <span style="color: #00ffff;">as</span> $<span style="color: #ffffff; font-weight: bold;">item</span>) {
+    $<span style="color: #ffffff; font-weight: bold;">template_name</span> = <span style="color: #ffff00;">'_partial'</span>;
+    $<span style="color: #ffffff; font-weight: bold;">template_vars</span> = <span style="color: #c0c0c0; background-color: #000000;">array(</span><span style="color: #ffff00;">'name'</span> =&gt; $<span style="color: #ffffff; font-weight: bold;">item</span>);
+    <span style="color: #00ffff;">echo</span> $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">fetch</span>($<span style="color: #ffffff; font-weight: bold;">template_name</span>, $<span style="color: #ffffff; font-weight: bold;">template_vars</span>);
+}
+
+</pre>
+
+<p>这会在一个独立的作用域中执行<code>$template_name</code>模版脚本，并在模版中解析<code>$templage_vars</code>数组。</p>
+
+
+<h3><a name="sec11" id="sec11"></a>
+写视图辅助</h3>
+
+<p class="first">自己写视图的话有两个工作要做：</p>
+
+<ol>
+<li>写一个辅助类</li>
+<li>在视图容器<code>Container</code>中把该类添加为服务</li>
+</ol>
+
+<p>编写辅助类是很简单的：继承<code>AbstractHelper</code>类，并实现<code>__invoke()</code>方法。例如，下面的视图辅助对一个字符串执行ROT-13处理。</p>
+
+<pre class="src">
+
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">namespace</span> <span style="color: #ff0000; font-weight: bold;">vendor</span>\<span style="color: #ff0000; font-weight: bold;">view</span>\<span style="color: #ff0000; font-weight: bold;">helper</span>;
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">view</span>\<span style="color: #ff0000; font-weight: bold;">helper</span>\<span style="color: #ff0000; font-weight: bold;">AbstractHelper</span>;
+
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">Obfuscate</span> <span style="color: #00ffff;">extends</span> <span style="color: #ff7f50;">AbstractHelper</span>
+{
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">__invoke</span>($<span style="color: #ffffff; font-weight: bold;">string</span>)
+    {
+        <span style="color: #00ffff;">return</span> $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">escape</span>(<span style="color: #c0c0c0; background-color: #000000;">str_rot13(</span>$<span style="color: #ffffff; font-weight: bold;">input</span>));
+    }
+}
+
+</pre>
+
+<p>要养成好习惯，总是转换用户输入。错误的转换也比不转换要好。</p>
+
+<p>我们已经写好了一个视图辅助类，现在要做的就是在视图辅助容器<code>Container</code>把它添加为服务，如：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">business logic
+</span>$<span style="color: #ffffff; font-weight: bold;">hc</span> = $<span style="color: #ffffff; font-weight: bold;">template</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">getHelperContainer</span>();
+
+$<span style="color: #ffffff; font-weight: bold;">hc</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'obfuscate'</span>, <span style="color: #c0c0c0; background-color: #000000;">function(</span>) <span style="color: #c0c0c0; background-color: #000000;">use (</span>$<span style="color: #ffffff; font-weight: bold;">hc</span>) {
+    <span style="color: #00ffff;">return</span> $<span style="color: #ffffff; font-weight: bold;">hc</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>(<span style="color: #ffff00;">'vendor\view\helper\Obfuscate'</span>);
+});
+
+</pre>
+
+<p>视图辅助容器<code>Container</code>中的服务名同时也是<code>Template</code>对象的方法名。也就是说我们可以使用<code>$this-&gt;obfuscate()</code>调用该辅助类：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">template script
+
+</span><span style="color: #00ffff;">echo</span> $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">obfuscate</span>(<span style="color: #ffff00;">'plain text'</span>);
+</pre>
+
+<p>注意，事实上辅助类可以使用任何名字，但是通常来说和服务名保持一致会更加直观。</p>
+
+<p>请到<code>aura\view\helper</code>查看更复杂、更强大的例子。</p>
+
+
+
+<!-- Page published by Emacs Muse ends here -->
+<a href="#top">返回顶部 ↑</a>
+    </div>
+  </div>
+  <div id="footer">
+    <p>
+      Copyright &copy; 2010 - 2011,
+      <a href="http://roygu.com">Roy Gu</a> Organized by <a href="http://bullsoft.org">Bull Soft</a><br />
+      网站风格及LOGO版权归<a href="http://paul-m-jones.com/">Paul M. Jones</a>及其他<a href="http://www.auraphp.org">Aura Php</a>贡献者所有
+    </p>
+  </div>
+</div>
+
+</body>
+</html>

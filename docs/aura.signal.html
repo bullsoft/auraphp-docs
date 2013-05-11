@@ -1,0 +1,505 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title> </title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/reset.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/text.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/960.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/aura.css" />
+
+  <script src="../js/jquery-1.6.1.min.js"></script>
+  <script>
+    $(document).ready(function()
+    {
+      $('#logo').hide();
+      $('#logo').delay(300).fadeIn(2000);
+    });
+  </script>
+</head>
+
+<body>
+<div id="top">
+  <div id="menu">
+    <a href="/">Home</a><a href="docs/">Documentation</a>
+  </div>
+  <div id="banner">
+    <a href="http://www.auraphp.org/" id="logo"></a>
+  </div>
+  <div id="content">
+    <div class="container_12">
+
+<h1 id="title">aura.signal</h1>
+<!-- Page published by Emacs Muse begins here -->
+
+<div class="page-nav">
+    <span class="page-prev"><a href="aura.di.html">上一页</a></span>
+    <span class="page-next"><a href="aura.cli.html">下一页</a></span>
+</div>
+<hr />
+
+<div class="contents">
+
+<dl>
+<dt>
+<a href="#sec1">简介</a>
+</dt>
+<dt>
+<a href="#sec2">基本用法</a>
+</dt>
+<dd>
+<dl>
+<dt>
+<a href="#sec3">实例化信号管理器</a>
+</dt>
+<dt>
+<a href="#sec4">添加信号处理器</a>
+
+</dt>
+<dt>
+<a href="#sec5">类发送信号</a>
+</dt>
+<dt>
+<a href="#sec6">信号继承</a>
+</dt>
+<dt>
+<a href="#sec7">对象发送信号</a>
+</dt>
+</dl>
+</dd>
+<dt>
+<a href="#sec8">高级用法</a>
+
+</dt>
+<dd>
+<dl>
+<dt>
+<a href="#sec9">处理器顺序组</a>
+</dt>
+<dt>
+<a href="#sec10">结果检测</a>
+</dt>
+<dt>
+<a href="#sec11">中止信号处理</a>
+</dt>
+<dt>
+<a href="#sec12">在构造期设置信号处理器</a>
+
+</dt>
+<dt>
+<a href="#sec13">呜谢</a>
+</dt>
+</dl>
+</dd>
+</dl>
+</div>
+
+
+<hr />
+
+<h2><a name="sec1" id="sec1"></a>
+简介</h2>
+
+<p class="first">Aura信号包是SignalSlots/EventHandler的PHP 5.3+实现。有了它，当对象向信号管理器发送信号（“通知”
+或“事件”）时，我们就可以调用处理器（“slots”或“hooks”）。</p>
+
+<hr />
+
+
+<h2><a name="sec2" id="sec2"></a>
+基本用法</h2>
+
+<h3><a name="sec3" id="sec3"></a>
+实例化信号管理器</h3>
+
+<p class="first">首先实例化信号管理器<code>Manager</code>类。最简单的方法就是调用<code>aura.signal/scripts/instance.php</code>脚本。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">signal</span> = <span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'/path/to/aura.signal/scripts/instance.php'</span>;
+</pre>
+
+
+<h3><a name="sec4" id="sec4"></a>
+添加信号处理器</h3>
+
+<p class="first">在向信号管理器<code>Manager</code>发送信号之前，我们要先添加一个处理器。具体的步骤如下：</p>
+
+<ol>
+<li>等待发送信号的类。可以是<code>'*'</code>代表“任意类”，也可以是一个类的全称。</li>
+<li>信号名称。</li>
+<li>处理信号的闭包或回调。</li>
+</ol>
+
+<p>例如，添加一个闭包，让其在<code>vendor\package\Example</code>类每次发送<code>'example_signal'</code>信号都执行一次：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">signal</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">handler</span>(
+    <span style="color: #ffff00;">'vendor\package\Example'</span>,
+    <span style="color: #ffff00;">'example_signal'</span>,
+    <span style="color: #c0c0c0; background-color: #000000;">function (</span>$<span style="color: #ffffff; font-weight: bold;">arg</span>) { <span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">arg</span>; }
+);
+
+</pre>
+
+
+<h3><a name="sec5" id="sec5"></a>
+类发送信号</h3>
+
+<p class="first">要发送信号，该类首先必须有一个<code>Manager</code>实例。然后再调用<code>send()</code>方法，并向其传递三个参数：类自身的实例、要发送的信号以及传递给信号处理器的参数。</p>
+
+<p>例如，我们将定义<code>vendor\package\Example</code>类，并使用它向<code>Manager</code>发送信号。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">namespace</span> <span style="color: #ff0000; font-weight: bold;">vendor</span>\<span style="color: #ff0000; font-weight: bold;">package</span>;
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">signal</span>\<span style="color: #ff0000; font-weight: bold;">Manager</span> <span style="color: #00ffff;">as</span> <span style="color: #ff0000; font-weight: bold;">SignalManager</span>;
+
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">Example</span>
+{
+    <span style="color: #00ffff;">protected</span> $<span style="color: #ffffff; font-weight: bold;">signal</span>;
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">__construct</span>(<span style="color: #ff7f50;">SignalManager</span> $<span style="color: #ffffff; font-weight: bold;">signal</span>)
+    {
+        $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">signal</span> = $<span style="color: #ffffff; font-weight: bold;">signal</span>;
+    }
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">doSomething</span>($<span style="color: #ffffff; font-weight: bold;">text</span>)
+    {
+        <span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">text</span>;
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">send</span>($<span style="color: #00ff00;">this</span>, <span style="color: #ffff00;">'example_signal'</span>, $<span style="color: #ffffff; font-weight: bold;">text</span>);
+    }
+}
+
+</pre>
+
+<p>当我们调用<code>doSomething()</code>方法时，它将会向<code>Manager</code>发送<code>'example_signal'</code>信号，并且<code>Manager</code>会为该信号调用相应的处理器。</p>
+
+
+<h3><a name="sec6" id="sec6"></a>
+信号继承</h3>
+
+<p class="first">如果某个类发送一个信号，但是并没有为该信号设置任何信号处理器，那么<code>Manager</code>就不会有任何响应。然而，如果曾为该类的父类设置过信号处理器，那么当其子类发送父类曾处理过的信号时，<code>Manager</code>将会以相同的方式处理子类发送的信号。</p>
+
+<p>例如，我们定义两个类，并调用它们的<code>doSomethingElse()</code>方法 。。。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">namespace</span> <span style="color: #ff0000; font-weight: bold;">vendor</span>\<span style="color: #ff0000; font-weight: bold;">package</span>;
+
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">signal</span>\<span style="color: #ff0000; font-weight: bold;">Manager</span> <span style="color: #00ffff;">as</span> <span style="color: #ff0000; font-weight: bold;">SignalManager</span>;
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">ExampleChild</span> <span style="color: #00ffff;">extends</span> <span style="color: #ff7f50;">Example</span>
+
+{
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">doSomethingElse</span>($<span style="color: #ffffff; font-weight: bold;">text</span>)
+    {
+        <span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">text</span> . $<span style="color: #ffffff; font-weight: bold;">text</span> . $<span style="color: #ffffff; font-weight: bold;">text</span>;
+        $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">send</span>($<span style="color: #00ff00;">this</span>, <span style="color: #ffff00;">'example_signal'</span>, $<span style="color: #ffffff; font-weight: bold;">text</span>)
+    }
+}
+
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">ExampleOther</span>
+{
+    <span style="color: #00ffff;">protected</span> $<span style="color: #ffffff; font-weight: bold;">signal</span>;
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">__construct</span>(<span style="color: #ff7f50;">SignalManager</span> $<span style="color: #ffffff; font-weight: bold;">signal</span>)
+    {
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">signal</span> = $<span style="color: #ffffff; font-weight: bold;">signal</span>;
+    }
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">doSomethingElse</span>($<span style="color: #ffffff; font-weight: bold;">text</span>)
+    {
+        <span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">text</span> . $<span style="color: #ffffff; font-weight: bold;">text</span> . $<span style="color: #ffffff; font-weight: bold;">text</span>;
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">send</span>($<span style="color: #00ff00;">this</span>, <span style="color: #ffff00;">'example_signal'</span>, $<span style="color: #ffffff; font-weight: bold;">text</span>)
+    }
+}
+
+</pre>
+
+<p>。。。那么<code>Manager</code>会处理来自<code>ExampleChild</code>的信号，因为它的父类定义过该信号的处理器。而<code>Manager</code>不会处理<code>ExampleOther</code>发送的信号，因为它或它的父类都没有在<code>Manager</code>中添加信号处理器。</p>
+
+
+<h3><a name="sec7" id="sec7"></a>
+
+对象发送信号</h3>
+
+<p class="first">当然，你也可以给对象实例绑定信号处理器，这样仅当该对象发出的信号才会被处理。实现很简单，只要将传递给信号处理器的参数<code>$sender</code>设为对象实例即可。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">/**</span><span style="color: #ff0000;">
+ * @var aura\signal\Manager $signal
+ </span><span style="color: #ff0000;">*/</span>
+
+$<span style="color: #ffffff; font-weight: bold;">object</span> = <span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">vendor</span>\<span style="color: #ff0000; font-weight: bold;">package</span>\<span style="color: #c0c0c0; background-color: #000000;">ExampleChild(</span>$<span style="color: #ffffff; font-weight: bold;">signal</span>);
+
+$<span style="color: #ffffff; font-weight: bold;">signal</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">handler</span>(
+    $<span style="color: #ffffff; font-weight: bold;">object</span>,
+    <span style="color: #ffff00;">'example_signal'</span>,
+    <span style="color: #c0c0c0; background-color: #000000;">function (</span>$<span style="color: #ffffff; font-weight: bold;">arg</span>) { <span style="color: #00ffff;">echo</span> <span style="color: #ffff00;">"$arg!!!"</span>;}
+);
+
+</pre>
+
+<p>如果指定对象实例发送<code>example_signal</code>信号，那么信号处理器便会被激活。即使<code>ExampleChild</code>类的其他实例发送同样的信号也不会激活信号处理器。当你需要在对象内部设置信号处理器且回调函数也是对象内部方法时，这就变得异常有用了。例如：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">namespace</span> <span style="color: #ff0000; font-weight: bold;">vendor</span>\<span style="color: #ff0000; font-weight: bold;">package</span>;
+
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">signal</span>\<span style="color: #ff0000; font-weight: bold;">Manager</span> <span style="color: #00ffff;">as</span> <span style="color: #ff0000; font-weight: bold;">SignalManager</span>;
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">ExampleAnotherChild</span> <span style="color: #00ffff;">extends</span> <span style="color: #ff7f50;">Example</span>
+
+{
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">__construct</span>(<span style="color: #ff7f50;">SignalManager</span> $<span style="color: #ffffff; font-weight: bold;">signal</span>)
+    {
+        <span style="color: #00ff00;">parent</span>::<span style="color: #c0c0c0; background-color: #000000;">__construct(</span>);
+        $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">handler</span>($<span style="color: #00ff00;">this</span>, <span style="color: #ffff00;">'preAction'</span>, <span style="color: #c0c0c0; background-color: #000000;">array(</span>$<span style="color: #00ff00;">this</span>, <span style="color: #ffff00;">'preAction'</span>));
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">handler</span>($<span style="color: #00ff00;">this</span>, <span style="color: #ffff00;">'postAction'</span>, <span style="color: #c0c0c0; background-color: #000000;">array(</span>$<span style="color: #00ff00;">this</span>, <span style="color: #ffff00;">'postAction'</span>));
+    }
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">action</span>()
+    {
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">send</span>($<span style="color: #00ff00;">this</span>, <span style="color: #ffff00;">'preAction'</span>);
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">doSomething</span>();
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">send</span>($<span style="color: #00ff00;">this</span>, <span style="color: #ffff00;">'postAction'</span>);
+    }
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">preAction</span>()
+    {
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">happens before the main action() logic
+
+</span>    }
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">postAction</span>()
+    {
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">happens after the main action() logic
+</span>    }
+}
+</pre>
+
+<p>当<code>ExampleAnotherChild::action()</code>方法被调用时，上面的代码做什么事呢？</p>
+
+<ol>
+<li>向<code>Manager</code>发送<code>'preAction'</code>信号，当处理器被激活时将会调用对象的<code>preAction()</code>方法。</li>
+<li>调用对象的<code>doSomething()</code>方法。（注意，<code>doSomething()</code>方法向<code>Manager</code>发送自己的<code>'example_signal'</code>信号。）</li>
+
+<li>向<code>Manager</code>发送<code>'postAction'</code>信号，当处理顺被激活时针会调用对象的。<code>postAction()</code>方法。</li>
+</ol>
+
+<p>如果存在<code>ExampleAnotherChild</code>类或其父类的信号处理器，它们同样会被执行。也就是说，我们可以结合使用类信号处理器和对象信号处理器。</p>
+
+<hr />
+
+
+<h2><a name="sec8" id="sec8"></a>
+高级用法</h2>
+
+<h3><a name="sec9" id="sec9"></a>
+处理器顺序组</h3>
+
+<p class="first">默认情况下，所有处理器<code>Handler</code>对象将被添加到<code>Manager</code>栈（译者注：实际上应该是队列）的末尾，并且会按照添加的顺序进行处理。有时候你可能需要以不同的顺序执行<code>Handler</code>，比如在最开始或最后面。如果你有这方面的需求，那么当你向<code>Manager</code>添加<code>Handler</code>的时，再传递一个<code>$position</code>顺序值。（<code>Handler</code>处理器的默认<code>$position</code>顺序是5000。）</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">add a closure at position 1000, which means it will be processed
+</span><span style="color: #ff0000;">// </span><span style="color: #ff0000;">before all handlers at the default position 5000.
+</span>$<span style="color: #ffffff; font-weight: bold;">closure</span> = <span style="color: #c0c0c0; background-color: #000000;">function(</span>) { <span style="color: #00ffff;">echo</span> <span style="color: #ffff00;">"Before all others."</span>; };
+$<span style="color: #ffffff; font-weight: bold;">signal</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">handler</span>(<span style="color: #ffff00;">'ExampleChild'</span>, <span style="color: #ffff00;">'example_signal'</span>, $<span style="color: #ffffff; font-weight: bold;">closure</span>, <span style="color: #c0c0c0; background-color: #000000;">1000</span>);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">add a closure at position 9000, which means it will be processed
+</span><span style="color: #ff0000;">// </span><span style="color: #ff0000;">after all handlers at the default position 5000.
+</span>$<span style="color: #ffffff; font-weight: bold;">closure</span> = <span style="color: #c0c0c0; background-color: #000000;">function(</span>) { <span style="color: #00ffff;">echo</span> <span style="color: #ffff00;">"After all others."</span>; };
+$<span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">handler</span>(<span style="color: #ffff00;">'ExampleChild'</span>, <span style="color: #ffff00;">'example_signal'</span>, $<span style="color: #ffffff; font-weight: bold;">closure</span>, <span style="color: #c0c0c0; background-color: #000000;">9000</span>);
+
+</pre>
+
+<p>按指定顺序添加的<code>Handler</code>处理器同样会被追加到同一顺序组。</p>
+
+
+<h3><a name="sec10" id="sec10"></a>
+结果检测</h3>
+
+<p class="first">信号发送后，我们可以审查所有处理器对该信号处理的结果。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">send a signal
+</span>$<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">send</span>($<span style="color: #00ff00;">this</span>, <span style="color: #ffff00;">'example_signal'</span>);
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">get the result collection
+</span>$<span style="color: #ffffff; font-weight: bold;">results</span> =  $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getResults</span>();
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">go through each result ...
+</span><span style="color: #00ffff;">foreach</span> ($<span style="color: #ffffff; font-weight: bold;">results</span> <span style="color: #00ffff;">as</span> $<span style="color: #ffffff; font-weight: bold;">result</span>) {
+
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">... and echo the value returned by the Handler callback
+</span>    <span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">result</span>-&gt;<span style="color: #ffffff; font-weight: bold;">value</span>;
+}
+
+</pre>
+
+<p><code>getResults()</code>方法返回<code>Result</code>对象的集合<code>ResultCollection</code>，每个对象都有以下属性：</p>
+
+<ul>
+<li><code>$origin</code>：发送信号的对象。</li>
+<li><code>$sender</code>：处理器期望的发送者。</li>
+
+<li><code>$signal</code>：$origin发送的信号。</li>
+<li><code>$value</code> ：<code>Handler</code>处理器回调返回的值。</li>
+</ul>
+
+<p>如果你只想获取最后一个结果，你可以调用<code>ResultCollection</code>对象的<code>getLast()</code>方法：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">send a signal and retain the results from each Handler
+</span>$<span style="color: #ffffff; font-weight: bold;">results</span> = $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">send</span>($<span style="color: #00ff00;">this</span>, <span style="color: #ffff00;">'example_signal'</span>);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">get the last result
+</span>$<span style="color: #ffffff; font-weight: bold;">result</span> = $<span style="color: #ffffff; font-weight: bold;">results</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getLast</span>();
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">and echo the value returned by the last Handler callback
+</span><span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">result</span>-&gt;<span style="color: #ffffff; font-weight: bold;">value</span>;
+
+</pre>
+
+
+<h3><a name="sec11" id="sec11"></a>
+中止信号处理</h3>
+
+<p class="first">有时候可能不得不中止信号处理过程。如果一个处理器回调返回<code>aura\signal\Manager::STOP</code>常量，那么不会再有其他处理器处理该信号。</p>
+
+<p>首先，我们定义一些处理器；注意第二个处理器返回<code>STOP</code>常量：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">add signal handlers
+</span>$<span style="color: #ffffff; font-weight: bold;">signal</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">handler</span>(
+    <span style="color: #ffff00;">'vendor\package\Example'</span>,
+    <span style="color: #ffff00;">'mock_signal'</span>,
+    <span style="color: #c0c0c0; background-color: #000000;">function(</span>) { <span style="color: #00ffff;">return</span> <span style="color: #ffff00;">'first'</span>; }
+);
+
+$<span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">handler</span>(
+    <span style="color: #ffff00;">'vendor\package\Example'</span>,
+    <span style="color: #ffff00;">'mock_signal'</span>,
+    <span style="color: #c0c0c0; background-color: #000000;">function(</span>) { <span style="color: #00ffff;">return</span> \<span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">signal</span>\<span style="color: #ff7f50;">Manager</span>::<span style="color: #c0c0c0; background-color: #000000;">STOP;</span> }
+);
+
+$<span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">handler</span>(
+    <span style="color: #ffff00;">'vendor\package\Example'</span>,
+    <span style="color: #ffff00;">'mock_signal'</span>,
+    <span style="color: #c0c0c0; background-color: #000000;">function(</span>) { <span style="color: #00ffff;">return</span> <span style="color: #ffff00;">'third'</span>; }
+);
+
+</pre>
+
+<p>然后，我们在某个对象内部发送一个信号：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">send</span>($<span style="color: #00ff00;">this</span>, <span style="color: #ffff00;">'mock_signal'</span>);
+$<span style="color: #ffffff; font-weight: bold;">results</span> = $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">signal</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getResults</span>();
+
+</pre>
+
+<p>正常情况下，<code>$results</code>数组有三个元素。但是这里它只有两个，因为第二个处理器返回了<code>\aura\signal\Manager::STOP</code>。也由于这个原因，第三个处理器不会执行。你可以调用<code>ResultCollection::isStopped()</code>方法来检测处理器是否被<code>Manager</code>中止。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #00ffff;">if</span> ($<span style="color: #ffffff; font-weight: bold;">results</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">isStopped</span>()) {
+    $<span style="color: #ffffff; font-weight: bold;">result</span> = $<span style="color: #ffffff; font-weight: bold;">results</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getLast</span>();
+    <span style="color: #00ffff;">echo</span> <span style="color: #ffff00;">"Processing for signal 'mock_signal' stopped "</span>
+
+       . <span style="color: #ffff00;">"by handler for "</span> . $<span style="color: #ffffff; font-weight: bold;">result</span>-&gt;<span style="color: #ffffff; font-weight: bold;">sender</span>;
+}
+</pre>
+
+
+<h3><a name="sec12" id="sec12"></a>
+在构造期设置信号处理器</h3>
+
+<p class="first">我们也可以在构造期往<code>Manager</code>中添加处理器<code>Handler</code>。这就允许我们使用一个或多个配置文件为<code>Manager</code>定义<code>Handler</code>栈。</p>
+
+<p>假如有一个配置文件<code>/path/to/signal_handlers.php</code>，代码如下。。。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #00ffff;">return</span> <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">first handler, with a closure
+</span>    <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+        <span style="color: #ffff00;">'vendor\package\Example'</span>,
+        <span style="color: #ffff00;">'mock_signal'</span>,
+        <span style="color: #c0c0c0; background-color: #000000;">function(</span>) { <span style="color: #00ffff;">return</span> <span style="color: #ffff00;">'foo'</span>; },
+    ),
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">second handler, with a static callback
+</span>    <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+        <span style="color: #ffff00;">'vendor\package\Example'</span>,
+        <span style="color: #ffff00;">'mock_signal'</span>,
+        <span style="color: #c0c0c0; background-color: #000000;">array(</span><span style="color: #ffff00;">'vendor\package\SomeClass'</span>, <span style="color: #ffff00;">'someMethod'</span>),
+    ),
+    <span style="color: #ff0000;">// </span><span style="color: #ff0000;">third handler, with a closure and position
+
+</span>    <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+        <span style="color: #ffff00;">'vendor\package\Example'</span>,
+        <span style="color: #ffff00;">'mock_signal'</span>,
+        <span style="color: #c0c0c0; background-color: #000000;">function(</span>) { <span style="color: #00ffff;">return</span> <span style="color: #ffff00;">'baz'</span>; },
+        <span style="color: #c0c0c0; background-color: #000000;">1000</span>,
+    ),
+);
+</pre>
+
+<p>。。。我们可以像下面这样配置<code>Manager</code>：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">namespace</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">signal</span>;
+$<span style="color: #ffffff; font-weight: bold;">handlers</span> = <span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'/path/to/signal_handlers.php'</span>;
+$<span style="color: #ffffff; font-weight: bold;">signal</span> = <span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Manager</span>(
+    <span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">HandlerFactory</span>,
+    <span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">ResultFactory</span>,
+    <span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">ResultCollection</span>,
+    $<span style="color: #ffffff; font-weight: bold;">handlers</span>
+
+);
+</pre>
+
+<p>这就相当于调用了三次<code>$signal-&gt;handler()</code>方法。</p>
+
+
+<h3><a name="sec13" id="sec13"></a>
+呜谢</h3>
+
+<p class="first">感谢Richard &quot;Cyberlot&quot; Thomas最初的建议，以及<a href="http://weierophinney.net/matthew/archives/251-Aspects&#44;-Filters&#44;-and-Signals&#44;-Oh&#44;-My&#33;.html">Matthew Weier O'Phinney</a>。</p>
+
+
+
+<!-- Page published by Emacs Muse ends here -->
+<a href="#top">返回顶部 ↑</a>
+
+    </div>
+  </div>
+  <div id="footer">
+    <p>
+      Copyright &copy; 2010 - 2011,
+      <a href="http://roygu.com">Roy Gu</a> Organized by <a href="http://bullsoft.org">Bull Soft</a><br />
+      网站风格及LOGO版权归<a href="http://paul-m-jones.com/">Paul M. Jones</a>及其他<a href="http://www.auraphp.org">Aura Php</a>贡献者所有
+    </p>
+  </div>
+</div>
+
+</body>
+</html>

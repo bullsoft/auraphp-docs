@@ -1,0 +1,251 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title> </title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/reset.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/text.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/960.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/aura.css" />
+
+  <script src="../js/jquery-1.6.1.min.js"></script>
+  <script>
+    $(document).ready(function()
+    {
+      $('#logo').hide();
+      $('#logo').delay(300).fadeIn(2000);
+    });
+  </script>
+</head>
+
+<body>
+<div id="top">
+  <div id="menu">
+    <a href="/">Home</a><a href="docs/">Documentation</a>
+  </div>
+  <div id="banner">
+    <a href="http://www.auraphp.org/" id="logo"></a>
+  </div>
+  <div id="content">
+    <div class="container_12">
+
+<h1 id="title">aura.http</h1>
+<!-- Page published by Emacs Muse begins here -->
+
+<div class="page-nav">
+    <span class="page-prev"><a href="aura.web.html">上一页</a></span>
+    <span class="page-next"><a href="aura.system.html">下一页</a></span>
+</div>
+<hr />
+
+<div class="contents">
+
+<dl>
+<dt>
+<a href="#sec1">简介</a>
+</dt>
+<dt>
+<a href="#sec2">开始</a>
+</dt>
+<dd>
+<dl>
+<dt>
+<a href="#sec3">实例化</a>
+</dt>
+<dt>
+<a href="#sec4">设置内容</a>
+
+</dt>
+<dt>
+<a href="#sec5">设置头部</a>
+</dt>
+<dt>
+<a href="#sec6">设置Cookie</a>
+</dt>
+<dt>
+<a href="#sec7">设置HTTP响应状态</a>
+</dt>
+<dt>
+<a href="#sec8">发送响应</a>
+</dt>
+
+</dl>
+</dd>
+</dl>
+</div>
+
+
+<hr />
+
+<h2><a name="sec1" id="sec1"></a>
+简介</h2>
+
+<p class="first">Aura HTTP包提供构建和发送HTTP响应（从服务器到客户端）的对象。</p>
+
+
+<h2><a name="sec2" id="sec2"></a>
+
+开始</h2>
+
+<h3><a name="sec3" id="sec3"></a>
+实例化</h3>
+
+<p class="first">最简单的方法你懂的，使用<code>scripts/instance.php</code>脚本获得一个新的<code>Response</code>对象。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+
+$<span style="color: #ffffff; font-weight: bold;">response</span> = <span style="color: #00ffff;">include</span> <span style="color: #ffff00;">'/path/to/aura.http/scripts/instance.php'</span>;
+</pre>
+
+<p>同样，你也可以把<code>'/path/to/aura.http/src'</code>目录添加到自动加载器中，然后手动构建<code>Response</code>对象：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">http</span>\<span style="color: #ff0000; font-weight: bold;">Response</span>;
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">http</span>\<span style="color: #ff0000; font-weight: bold;">Headers</span>;
+
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">http</span>\<span style="color: #ff0000; font-weight: bold;">Cookies</span>;
+$<span style="color: #ffffff; font-weight: bold;">response</span> = <span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Response</span>(<span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Headers</span>, <span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Cookies</span>);
+
+</pre>
+
+
+<h3><a name="sec4" id="sec4"></a>
+设置内容</h3>
+
+<p class="first">使用<code>setContent()</code>方法为<code>Response</code>对象设置内容：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+
+$<span style="color: #ffffff; font-weight: bold;">html</span> = <span style="color: #ffff00;">'&lt;html&gt;'</span>
+      . <span style="color: #ffff00;">'&lt;head&gt;&lt;title&gt;Test&lt;/title&gt;&lt;/head&gt;'</span>
+
+      . <span style="color: #ffff00;">'&lt;body&gt;Hello World!&lt;/body&gt;
+      . &lt;/html&gt;'</span>;
+$<span style="color: #ffffff; font-weight: bold;">response</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">setContent</span>($<span style="color: #ffffff; font-weight: bold;">html</span>);
+
+</pre>
+
+
+<h3><a name="sec5" id="sec5"></a>
+设置头部</h3>
+
+<p class="first">访问<code>$headers</code>属性（本身又是<code>Headers</code>集合对象）设置HTTP头部。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+
+$<span style="color: #ffffff; font-weight: bold;">response</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">headers</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'Header-Label'</span>, <span style="color: #ffff00;">'header value'</span>);
+</pre>
+
+<p>你也可以给<code>setAll()</code>方法传一个键-值数组一次性设置所有HTTP头部信息，数组键名就是HTTP头部标签，数组值一个或多个HTTP头部值。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">response</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">headers</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">setAll</span>(<span style="color: #c0c0c0; background-color: #000000;">array(</span>
+    <span style="color: #ffff00;">'Header-One'</span> =&gt; <span style="color: #ffff00;">'header one value'</span>,
+    <span style="color: #ffff00;">'Header-Two'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+        <span style="color: #ffff00;">'header two value A'</span>,
+        <span style="color: #ffff00;">'header two value B'</span>,
+        <span style="color: #ffff00;">'header two value C'</span>,
+    )
+));
+</pre>
+
+<p>注意，HTTP头部标签是要经过审查和规范处理的，所以如果你输入<code>header_foo</code>标签，它将会被转换成<code>Header-Foo</code>。</p>
+
+
+<h3><a name="sec6" id="sec6"></a>
+设置Cookie</h3>
+
+<p class="first">访问<code>$cookie</code>属性（它本身是一个<code>Cookie</code>集合对象）设置cookies。向它传递cookie名，和关于该cookie的信息数组（包含cookie值）。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">response</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">cookies</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">set</span>(<span style="color: #ffff00;">'cookie_name'</span>, <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+    <span style="color: #ffff00;">'value'</span>    =&gt; <span style="color: #ffff00;">'cookie value'</span>, <span style="color: #ff0000;">// </span><span style="color: #ff0000;">cookie value
+</span>    <span style="color: #ffff00;">'expire'</span>   =&gt; <span style="color: #c0c0c0; background-color: #000000;">time(</span>) + <span style="color: #c0c0c0; background-color: #000000;">3600</span>,  <span style="color: #ff0000;">// </span><span style="color: #ff0000;">expiration time in unix epoch seconds
+
+</span>    <span style="color: #ffff00;">'path'</span>     =&gt; <span style="color: #ffff00;">'/path'</span>,        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">server path for the cookie
+</span>    <span style="color: #ffff00;">'domain'</span>   =&gt; <span style="color: #ffff00;">'example.com'</span>,  <span style="color: #ff0000;">// </span><span style="color: #ff0000;">domain for the cookie
+
+</span>    <span style="color: #ffff00;">'secure'</span>   =&gt; <span style="color: #00ff00;">false</span>,          <span style="color: #ff0000;">// </span><span style="color: #ff0000;">send by ssl only?
+</span>    <span style="color: #ffff00;">'httponly'</span> =&gt; <span style="color: #00ff00;">true</span>,           <span style="color: #ff0000;">// </span><span style="color: #ff0000;">send by http/https only?
+
+</span>));
+</pre>
+
+<p>信息数组是模仿<a href="http://php.net/setcookies">setcookies()</a>参数名建立的。你只需提供你要用到的参数，其他的将会用<code>null</code>填充。</p>
+
+<p>你也可以传递一个键-值数组一次性设置所有cookie，数组键名就是cookie名，数组值是cookie信息数组。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">response</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">cookies</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">setAll</span>(<span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+    <span style="color: #ffff00;">'cookie_foo'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+        <span style="color: #ffff00;">'value'</span> =&gt; <span style="color: #ffff00;">'value for cookie foo'</span>,
+    ),
+    <span style="color: #ffff00;">'cookie_bar'</span> =&gt; <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+        <span style="color: #ffff00;">'value'</span> =&gt; <span style="color: #ffff00;">'value for cookie bar'</span>,
+    ),
+));
+</pre>
+
+
+<h3><a name="sec7" id="sec7"></a>
+设置HTTP响应状态</h3>
+
+<p class="first">使用<code>setStatusCode()</code>和<code>setStatusText()</code>方法设置HTTP响应状态。<code>setStatusCode()</code>方法会自动设置已知状态码的文本。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">automatically sets the status text to 'Not Modified'
+</span>$<span style="color: #ffffff; font-weight: bold;">response</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">setStatusCode</span>(<span style="color: #c0c0c0; background-color: #000000;">304</span>);
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">change the status text to something else
+</span>$<span style="color: #ffffff; font-weight: bold;">response</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">setStatusText</span>(<span style="color: #ffff00;">'Same As It Ever Was'</span>);
+
+</pre>
+
+<p><code>Response</code>对象默认设置响应状态为<code>'200 OK'</code>。</p>
+
+
+<h3><a name="sec8" id="sec8"></a>
+发送响应</h3>
+
+<p class="first">如果你已经设置好了内容、头部、cookie和响应状态，你可以使用<code>send()</code>方法发送响应到客户端。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+$<span style="color: #ffffff; font-weight: bold;">response</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #c0c0c0; background-color: #000000;">send</span>();
+</pre>
+
+<p>这将会使用<a href="http://php.net/header">header()</a>函数发送所有HTTP头，使用<a href="http://php.net/setcookie">setcookie()</a>发送所有cookie，然后<code>echo</code>内容。</p>
+
+<p>注意，你只能发送一次响应<code>Response</code>。如果你尝试再次发送，或者发送另一个带有HTTP头的响应，你将会触发<code>Exception_HeadersSent</code>异常。</p>
+
+
+
+<!-- Page published by Emacs Muse ends here -->
+<a href="#top">返回顶部 ↑</a>
+    </div>
+  </div>
+  <div id="footer">
+    <p>
+      Copyright &copy; 2010 - 2011,
+      <a href="http://roygu.com">Roy Gu</a> Organized by <a href="http://bullsoft.org">Bull Soft</a><br />
+      网站风格及LOGO版权归<a href="http://paul-m-jones.com/">Paul M. Jones</a>及其他<a href="http://www.auraphp.org">Aura Php</a>贡献者所有
+    </p>
+  </div>
+</div>
+
+</body>
+</html>

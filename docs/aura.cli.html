@@ -1,0 +1,391 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title> </title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/reset.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/text.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/960.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../css/aura.css" />
+
+  <script src="../js/jquery-1.6.1.min.js"></script>
+  <script>
+    $(document).ready(function()
+    {
+      $('#logo').hide();
+      $('#logo').delay(300).fadeIn(2000);
+    });
+  </script>
+</head>
+
+<body>
+<div id="top">
+  <div id="menu">
+    <a href="/">Home</a><a href="docs/">Documentation</a>
+  </div>
+  <div id="banner">
+    <a href="http://www.auraphp.org/" id="logo"></a>
+  </div>
+  <div id="content">
+    <div class="container_12">
+
+<h1 id="title">aura.cli</h1>
+<!-- Page published by Emacs Muse begins here -->
+
+<div class="page-nav">
+    <span class="page-prev"><a href="aura.signal.html">上一页</a></span>
+    <span class="page-next"><a href="aura.router.html">下一页</a></span>
+</div>
+<hr />
+
+<div class="contents">
+
+<dl>
+<dt>
+<a href="#sec1">简介</a>
+</dt>
+<dt>
+<a href="#sec2">基本用法</a>
+</dt>
+<dd>
+<dl>
+<dt>
+<a href="#sec3">动作和输入/输出</a>
+</dt>
+<dt>
+<a href="#sec4">信号钩子</a>
+
+</dt>
+<dt>
+<a href="#sec5">变量参数</a>
+</dt>
+</dl>
+</dd>
+<dt>
+<a href="#sec6">高级用法</a>
+</dt>
+<dd>
+<dl>
+<dt>
+<a href="#sec7">长短选项</a>
+</dt>
+
+<dt>
+<a href="#sec8">信号和取消动作</a>
+</dt>
+<dt>
+<a href="#sec9">调用脚本和命令工厂</a>
+</dt>
+</dl>
+</dd>
+</dl>
+</div>
+
+
+<hr />
+
+<h2><a name="sec1" id="sec1"></a>
+
+简介</h2>
+
+<p class="first">Aura CLI包提供了一个创建和执行CLI <code>Command</code>命令行对象的系统。它包含解析命令行参数和处理标准输入输出流的组件，而且也是基于<a href="http://roygu.com/doc/auraphp/aura.signal.html">信号</a>的。</p>
+
+<p>Aura CLI包依赖<a href="http://roygu.com/doc/auraphp/aura.di.html">aura.di</a>和<a href="http://roygu.com/doc/auraphp/aura.signal.html">aura.signal</a>包。</p>
+
+<hr />
+
+
+<h2><a name="sec2" id="sec2"></a>
+基本用法</h2>
+
+<h3><a name="sec3" id="sec3"></a>
+动作和输入/输出</h3>
+
+<p class="first">命令<code>Command</code>的逻辑处理一般在<code>action()</code>方法中。在下面的示例中，我们将演示基本的输入/输出。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">namespace</span> <span style="color: #ff0000; font-weight: bold;">vendor</span>\<span style="color: #ff0000; font-weight: bold;">package</span>;
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">cli</span>\<span style="color: #ff0000; font-weight: bold;">Command</span>;
+
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">Example</span> <span style="color: #00ffff;">extends</span> <span style="color: #ff7f50;">Command</span>
+{
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">action</span>()
+    {
+        $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">stdio</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">outln</span>(<span style="color: #ffff00;">'Hello World!'</span>);
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">stdio</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">out</span>(<span style="color: #ffff00;">'Please enter some text: '</span>);
+        $<span style="color: #ffffff; font-weight: bold;">input</span> = $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">stdio</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">in</span>();
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">stdio</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">errln</span>(<span style="color: #ffff00;">'Input was '</span> . $<span style="color: #ffffff; font-weight: bold;">input</span>);
+    }
+}
+
+</pre>
+
+<p>当调用这个命令<code>Command</code>时，将会输出&quot;Hello Wordl!&quot;，询问用户输入，最后输出用户输入或错误流。</p>
+
+<p>使用<code>$stdio</code>对象处理标准输入/输出流。该对象具有以下方法：</p>
+
+<ul>
+<li><code>outln()</code> 和 <code>out()</code>：写入到标准输出流，第一个方法输出的结尾有换行符，第二个则没有。</li>
+
+<li><code>errln()</code> 和 <code>err()</code>：写入到标准错误流,第一个方法输出的结尾有换行符，第二个则没有。</li>
+<li><code>inln()</code> 和 <code>in()</code>：从标准输入流读入，直到用户敲回车键。第一个方法将保留输入末尾的换行符，第二个则不会。</li>
+</ul>
+
+
+<h3><a name="sec4" id="sec4"></a>
+信号钩子</h3>
+
+<p class="first">Aura的CLI 命令<code>Command</code>有四个信号钩子；这些钩子是通过信号管理器<code>$signal</code>调用的。在动作前后使用pre-和post-action方法，在命令启动和退出前后使用pre-和post-exec方法。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">namespace</span> <span style="color: #ff0000; font-weight: bold;">vendor</span>\<span style="color: #ff0000; font-weight: bold;">package</span>;
+
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">cli</span>\<span style="color: #ff0000; font-weight: bold;">Command</span>;
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">Example</span> <span style="color: #00ffff;">extends</span> <span style="color: #ff7f50;">Command</span>
+{
+    <span style="color: #00ffff;">protected</span> $<span style="color: #ffffff; font-weight: bold;">input</span> = <span style="color: #ffff00;">'foo bar baz'</span>;
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">preExec</span>()
+    {
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">perform object setup here
+
+</span>    }
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">preAction</span>()
+    {
+        $<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">stdio</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">outln</span>(<span style="color: #ffff00;">'The input is currently '</span> . $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">input</span>);
+    }
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">action</span>()
+    {
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">stdio</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">out</span>(<span style="color: #ffff00;">'Please enter some text: '</span>);
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">input</span> = $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">stdio</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">in</span>();
+    }
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">postAction</span>()
+    {
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">stdio</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">outln</span>(<span style="color: #ffff00;">'The input was '</span> . $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">input</span>);
+    }
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">postExec</span>()
+    {
+        <span style="color: #ff0000;">// </span><span style="color: #ff0000;">perform object teardown here
+
+</span>    }
+}
+</pre>
+
+
+<h3><a name="sec5" id="sec5"></a>
+变量参数</h3>
+
+<p class="first">传递命令行参数也是命令调用的一部分。在<code>Command</code>对象中获取命令行参数，要使用<code>$this-&gt;params</code>属性。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">namespace</span> <span style="color: #ff0000; font-weight: bold;">vendor</span>\<span style="color: #ff0000; font-weight: bold;">package</span>;
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">cli</span>\<span style="color: #ff0000; font-weight: bold;">Command</span>;
+
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">Example</span> <span style="color: #00ffff;">extends</span> <span style="color: #ff7f50;">Command</span>
+{
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">action</span>()
+    {
+        <span style="color: #00ffff;">foreach</span> ($<span style="color: #00ff00;">this</span>-<span style="color: #00ff00;">&gt;</span><span style="color: #ffffff; font-weight: bold;">params</span> <span style="color: #00ffff;">as</span> $<span style="color: #ffffff; font-weight: bold;">key</span> =&gt; $<span style="color: #ffffff; font-weight: bold;">val</span>) {
+            $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">stdio</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">outln</span>(<span style="color: #ffff00;">"Param $key is '$val'."</span>);
+        }
+    }
+}
+
+</pre>
+
+<p>例如，如果我们输入命令。。。</p>
+
+<pre class="src">
+$ php command.php foo bar baz
+</pre>
+
+<p>。。。那么<code>action()</code>方法将会输出：</p>
+
+<pre class="src">
+Param 0 is 'foo'.
+Param 1 is 'bar'.
+Param 2 is 'baz'.
+</pre>
+
+<hr />
+
+
+
+<h2><a name="sec6" id="sec6"></a>
+高级用法</h2>
+
+<h3><a name="sec7" id="sec7"></a>
+长短选项</h3>
+
+<p class="first">除了变量参数，我们还希望在调用命令的时候能够传入某些短开关和长选项参数。一般在命令行中以<code>-a</code>和<code>--option=value</code>形式出现。</p>
+
+<p>为了处理选项，首先在<code>Command</code>对象中定义<code>$options</code>数组。然后就可以使用<code>$getopt</code>方法获取各选项值。</p>
+
+<p>下面来看看关于命令行选项的示例：</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000; font-weight: bold;">namespace</span> <span style="color: #ff0000; font-weight: bold;">vendor</span>\<span style="color: #ff0000; font-weight: bold;">package</span>;
+
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">cli</span>\<span style="color: #ff0000; font-weight: bold;">Command</span>;
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">cli</span>\<span style="color: #ff0000; font-weight: bold;">Option</span>;
+
+<span style="color: #00ffff;">class</span> <span style="color: #ff7f50;">Example</span> <span style="color: #00ffff;">extends</span> <span style="color: #ff7f50;">Command</span>
+
+{
+    <span style="color: #00ffff;">protected</span> $<span style="color: #ffffff; font-weight: bold;">options</span> = <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+        <span style="color: #ffff00;">'foo_bar'</span> =<span style="color: #00ff00;">&gt;</span> <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+            <span style="color: #ffff00;">'long'</span>    =&gt; <span style="color: #ffff00;">'foo-bar'</span>,
+            <span style="color: #ffff00;">'short'</span>   =&gt; <span style="color: #ffff00;">'f'</span>,
+            <span style="color: #ffff00;">'param'</span>   =&gt; <span style="color: #ff7f50;">Option</span>::<span style="color: #c0c0c0; background-color: #000000;">PARAM_REQUIRED,</span>
+
+            <span style="color: #ffff00;">'multi'</span>   =&gt; <span style="color: #00ff00;">false</span>,
+            <span style="color: #ffff00;">'default'</span> =&gt; <span style="color: #00ff00;">null</span>,
+        ),
+    );
+
+    <span style="color: #00ffff;">public</span> <span style="color: #00ffff;">function</span> <span style="color: #4186be;">action</span>()
+    {
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">stdio</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">out</span>(<span style="color: #ffff00;">"The value of -f/--foo-bar is "</span>)
+        $<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">stdio</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">outln</span>($<span style="color: #00ff00;">this</span>-&gt;<span style="color: #ffffff; font-weight: bold;">getopt</span>-&gt;<span style="color: #ffffff; font-weight: bold;">foo_bar</span>);
+    }
+}
+
+</pre>
+
+<p>当我们调用上面命令时。。。</p>
+
+<pre class="src">
+$ php command.php --foo-bar=gir
+</pre>
+
+<p>。。。它会输出：</p>
+
+<pre class="src">
+The value of -f/--foo-bar is gir.
+</pre>
+
+<p><code>$options</code>数组的键名就是选项的名称，而每个元素又是一个选项定义数组，键名如下：</p>
+
+<ul>
+<li><code>'long'</code>: 长格式选项，在命令行中以两个&quot;-&quot;符号开始。长格式的参数值是等号后面的值；例如：<code>--foo-bar=some_value</code>。如果不需要长格式选项，此值留空即可。</li>
+<li><code>'short'</code>: 短格式选项，在命令行中以一个&quot;-&quot;符号开始。短格式的参数值是空格后面的值；例如：<code>-f some_value</code>。如果不需要短格式选项，此值留空即可。</li>
+
+<li><code>'param'</code>: 选项值是必须的，还是可选的，又或者是不允许的？<code>Option::PARAM_REQUIRED</code>表示必须传递参数值，<code>Option::PARAM_OPTIONAL</code>表示参数值是可选的，<code>Option::PARAM_REJECTED</code>表示不允许传入任何参数值。</li>
+<li><code>'multi'</code>: 选项是否允许在同一个命令中多递传递？例如：传入&quot;-f foo -f bar -f zim&quot;将会传入一个数组选项值（数组元素：<code>'foo'</code>, <code>'bar'</code>, <code>'zim'</code>）。</li>
+
+<li><code>'default'</code>: 未传递参数时的默认值。</li>
+</ul>
+
+<p>定义好选项并在命令行中传值后，我们可以使用<code>$getopt</code>对象获取选项值，就好像魔述获取类属性一样。因此，对于上面的<code>'foo_bar'</code>选项，我们使用<code>$this-&gt;getopt-&gt;foo_bar</code>获取它的值。</p>
+
+
+<h3><a name="sec8" id="sec8"></a>
+信号和取消动作</h3>
+
+<p class="first">在执行<code>exec()</code>期间，<code>Command</code>会发送一个<code>'pre_exec'</code>信号给信号管理器，并把命令<code>Command</code>对象作为唯一参数传递给信号管理器。根据需要在这里设置命令<code>Command</code>对象。</p>
+
+<p>在<code>action()</code>方法执行之前，命令<code>Command</code>对象会发送一个<code>'pre_action'</code>信号给信号管理器，并把命令<code>Command</code>对象作为唯一参数传递给信号管理器。</p>
+
+<p>要中止<code>action()</code>方法运行，只需在<code>'pre_action'</code>信号处理器中调用命令<code>Command</code>对象的<code>skipAction()</code>方法即可。这将会跳过<code>action()</code>方法，直接执行<code>'post_exec'</code>信号。</p>
+
+<p><code>action()</code>方法执行完后，命令<code>Command</code>对象会发送一个<code>'post_action'</code>信号给信号管理器，并把命令<code>Command</code>对象作为唯一参数传递给信号管理器。（如果跳过了<code>action()</code>方法，<code>'post_action'</code>信号也不会被发送。）</p>
+
+<p>最后，在<code>exec()</code>方法结束之前，命令<code>Command</code>对象会发送一个<code>'post_exec'</code>信号给信号管理骂，并把命令<code>Command</code>对象作为唯一参数传递给信号管理器。在命令执行完毕后，根据需要执行清理工作。</p>
+
+
+<h3><a name="sec9" id="sec9"></a>
+调用脚本和命令工厂</h3>
+
+<p class="first">在我们执行命令<code>Command</code>对象前，我们需要一个“调用脚本”。它相当于CLI环境下的引导脚本。调用脚本是我们在命令行执行的文件；它建立执行环境，创建命令<code>Command</code>对象并且执行它。</p>
+
+<p>在调用脚本中，不要直接实例化命令<code>Command</code>类。而应该创建一个数组映射（短命令名称=&gt;关联类名称），并使用<code>CommandFactory</code>创建该短命令名称的命令<code>Command</code>对象。</p>
+
+<p>例如，下面的代码将会实例化<code>vendor.package/src</code>目录下的<code>vendor\package\Example</code>类并执行它。代码有些长，且为了实现必要的功能，使用了Aura的其它包。</p>
+
+<pre class="src">
+<span style="color: #ffaa00;">&lt;?php</span>
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">create a map of command names to command classes
+</span>$<span style="color: #ffffff; font-weight: bold;">command_map</span> = <span style="color: #c0c0c0; background-color: #000000;">array(</span>
+
+    <span style="color: #ffff00;">'example'</span> =<span style="color: #00ff00;">&gt;</span> <span style="color: #ffff00;">'vendor\package\Example'</span>,
+);
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">set up an autoloader
+</span>$<span style="color: #ffffff; font-weight: bold;">loader</span> = <span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'/path/to/aura.autoload/scripts/instance.php'</span>;
+$<span style="color: #ffffff; font-weight: bold;">loader</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">register</span>();
+$<span style="color: #ffffff; font-weight: bold;">loader</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">addPrefix</span>(<span style="color: #ffff00;">'aura\di\\'</span>,        <span style="color: #ffff00;">'/path/to/aura.di/src'</span>);
+$<span style="color: #ffffff; font-weight: bold;">loader</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">addPrefix</span>(<span style="color: #ffff00;">'aura\signal\\'</span>,    <span style="color: #ffff00;">'/path/to/aura.signal/src'</span>);
+$<span style="color: #ffffff; font-weight: bold;">loader</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">addPrefix</span>(<span style="color: #ffff00;">'aura\cli\\'</span>,       <span style="color: #ffff00;">'/path/to/aura.cli/src'</span>);
+$<span style="color: #ffffff; font-weight: bold;">loader</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">addPrefix</span>(<span style="color: #ffff00;">'vendor\package\\'</span>, <span style="color: #ffff00;">'/path/to/vendor.package/src'</span>);
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">instantiate and configure the DI container.
+</span><span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">di</span>\<span style="color: #ff0000; font-weight: bold;">Container</span>;
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">di</span>\<span style="color: #ff0000; font-weight: bold;">Forge</span>;
+
+<span style="color: #ff0000; font-weight: bold;">use</span> <span style="color: #ff0000; font-weight: bold;">aura</span>\<span style="color: #ff0000; font-weight: bold;">di</span>\<span style="color: #ff0000; font-weight: bold;">Config</span>;
+$<span style="color: #ffffff; font-weight: bold;">di</span> = <span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Container</span>(<span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Forge</span>(<span style="color: #00ffff;">new</span> <span style="color: #ff7f50;">Config</span>));
+
+<span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'/path/to/aura.signal/config/default.php'</span>;
+<span style="color: #00ffff;">require</span> <span style="color: #ffff00;">'/path/to/aura.cli/config/default.php'</span>;
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">get the cli context object from the DI container, then discard the
+</span><span style="color: #ff0000;">// </span><span style="color: #ff0000;">invoking script name from the cli context argument values
+</span>$<span style="color: #ffffff; font-weight: bold;">context</span> = $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">get</span>(<span style="color: #ffff00;">'cli_context'</span>);
+$<span style="color: #ffffff; font-weight: bold;">context</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">shiftArgv</span>();
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">get the command factory from the DI container and add the command map
+</span>$<span style="color: #ffffff; font-weight: bold;">factory</span> = $<span style="color: #ffffff; font-weight: bold;">di</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">get</span>(<span style="color: #ffff00;">'cli_command_factory'</span>);
+<span style="color: #00ffff;">foreach</span> ($<span style="color: #ffffff; font-weight: bold;">command_map</span> <span style="color: #00ffff;">as</span> $<span style="color: #ffffff; font-weight: bold;">name</span> =&gt; $<span style="color: #ffffff; font-weight: bold;">class</span>) {
+    $<span style="color: #ffffff; font-weight: bold;">factory</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">map</span>($<span style="color: #ffffff; font-weight: bold;">name</span>, $<span style="color: #ffffff; font-weight: bold;">class</span>);
+}
+
+
+<span style="color: #ff0000;">// </span><span style="color: #ff0000;">using first cli context argument as the short command name,
+</span><span style="color: #ff0000;">// </span><span style="color: #ff0000;">get a new command object instance and then execute it.
+</span><span style="color: #00ffff;">try</span> {
+    $<span style="color: #ffffff; font-weight: bold;">command</span> = $<span style="color: #ffffff; font-weight: bold;">factory</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">newInstance</span>($<span style="color: #ffffff; font-weight: bold;">context</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">shiftArgv</span>());
+    $<span style="color: #ffffff; font-weight: bold;">command</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">exec</span>();
+} <span style="color: #00ffff;">catch</span> (<span style="color: #ff7f50;">Exception</span> $<span style="color: #ffffff; font-weight: bold;">e</span>) {
+    <span style="color: #00ffff;">echo</span> $<span style="color: #ffffff; font-weight: bold;">e</span>-&gt;<span style="color: #c0c0c0; background-color: #000000;">getMessage</span>() . <span style="color: #00ff00;">PHP_EOL</span>;
+}
+
+</pre>
+
+<p>把上述代码存到<code>command.php</code>文件中。然后在命令行中键入<code>php /path/to/command.php example</code>命令，它将会执行<code>vendor\package\Example</code>类。</p>
+
+<p>哇哦，你可以觉得代码太多了。如果你使用aura.system框架，它会帮你处理所有工作，但如果你不想使用整个框架，那么你不得不自己写这些代码。</p>
+
+
+
+<!-- Page published by Emacs Muse ends here -->
+
+<a href="#top">返回顶部 ↑</a>
+
+    </div>
+  </div>
+  <div id="footer">
+    <p>
+      Copyright &copy; 2010 - 2011,
+      <a href="http://roygu.com">Roy Gu</a> Organized by <a href="http://bullsoft.org">Bull Soft</a><br />
+      网站风格及LOGO版权归<a href="http://paul-m-jones.com/">Paul M. Jones</a>及其他<a href="http://www.auraphp.org">Aura Php</a>贡献者所有
+    </p>
+  </div>
+</div>
+
+</body>
+</html>
